@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/.vs/LastMeterFrontend/FileContentIndex
+/.vs/LastMeterFrontend/CopilotIndices/17.14.1231.31060
+/.vs/LastMeterFrontend/v17
