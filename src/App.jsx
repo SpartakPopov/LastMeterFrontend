@@ -3,9 +3,32 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import { packageAPI } from './services/api.js'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [trackingNumber, setTrackingNumber] = useState('')
+  const [packageData, setPackageData] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSearchPackage = async () => {
+    if (!trackingNumber.trim()) return;
+    
+    setLoading(true);
+    setError('');
+    setPackageData(null);
+    
+    try {
+      const data = await packageAPI.getPackageByTrackingNumber(trackingNumber);
+      setPackageData(data);
+    } catch (err) {
+      setError('Package not found or server error');
+      console.error('API Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -20,6 +43,42 @@ function App() {
           <p>
             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
           </p>
+        </div>
+        
+        {/* API Testing Section */}
+        <div style={{ marginTop: '2rem', padding: '1rem', border: '1px solid #ccc', borderRadius: '8px' }}>
+          <h3>API Connection Test</h3>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input
+              type="text"
+              placeholder="Enter tracking number"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+            />
+            <button
+              onClick={handleSearchPackage}
+              disabled={loading}
+              style={{ padding: '0.5rem 1rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+            >
+              {loading ? 'Searching...' : 'Search Package'}
+            </button>
+          </div>
+          
+          {error && (
+            <div style={{ color: 'red', marginBottom: '1rem' }}>
+              {error}
+            </div>
+          )}
+          
+          {packageData && (
+            <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '4px' }}>
+              <h4>Package Found:</h4>
+              <pre style={{ fontSize: '0.9rem', overflow: 'auto' }}>
+                {JSON.stringify(packageData, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
         <button
           className="counter"
