@@ -1,5 +1,6 @@
 import React from 'react';
 import SearchBar from '../components/SearchBar';
+import packageImage from '../assets/package.png';
 
 export default function HomePage({ onSearch, loading }) {
     return (
@@ -10,30 +11,16 @@ export default function HomePage({ onSearch, loading }) {
 
             <div style={styles.content}>
                 <div style={styles.logoMark}>
-                    <PackageLogoIcon />
+                    <img src={packageImage} style={styles.logoImage}></img>
                 </div>
                 <h1 style={styles.title}>Track Your Package</h1>
                 <p style={styles.subtitle}>
-                    Enter your tracking number below to get real-time delivery updates.
+                    Enter your tracking number below to get delivery updates
                 </p>
                 <SearchBar onSearch={onSearch} loading={loading} />
-                <p style={styles.hint}>e.g. TRK-2024-00123</p>
             </div>
 
-            <footer style={styles.footer}>
-                <span>LastMeter Delivery</span>
-            </footer>
         </div>
-    );
-}
-
-function PackageLogoIcon() {
-    return (
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-            <path d="m3.3 7 8.7 5 8.7-5" />
-            <path d="M12 22V12" />
-        </svg>
     );
 }
 
@@ -88,6 +75,11 @@ const styles = {
         justifyContent: 'center',
         boxShadow: '0 8px 32px rgba(34,197,94,0.35)',
         marginBottom: '4px',
+    },
+    logoImage: {
+        width: 40,
+        height: 40,
+        objectFit: 'contain',
     },
     title: {
         fontSize: 'clamp(1.8rem, 5vw, 2.6rem)',

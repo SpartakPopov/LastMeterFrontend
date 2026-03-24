@@ -1,7 +1,7 @@
 import React from 'react';
 import PackageInfo from '../components/PackageInfo';
 import LoadingSpinner from '../components/LoadingSpinner';
-
+import packageImage from '../assets/package.png';
 export default function TrackingResultPage({ trackingNumber, packageData, loading, error, onBack, onSearch }) {
     return (
         <div style={styles.page}>
@@ -12,7 +12,6 @@ export default function TrackingResultPage({ trackingNumber, packageData, loadin
                     <span>Back</span>
                 </button>
                 <div style={styles.logo}>
-                    <span style={styles.logoIcon}><SmallPackageIcon /></span>
                     <span style={styles.logoText}>LastMeter</span>
                 </div>
             </header>
@@ -154,5 +153,11 @@ const styles = {
         color: '#b91c1c',
         fontSize: '0.88rem',
         lineHeight: 1.5,
+    },
+
+    logoImage: {
+        width: 40,
+        height: 40,
+        objectFit: 'contain',
     },
 };
