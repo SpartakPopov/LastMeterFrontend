@@ -6,7 +6,7 @@ const spinnerKeyframes = `
 }
 `;
 
-export default function LoadingSpinner({ size = 40, message = 'Fetching package info…' }) {
+export default function LoadingSpinner({ size = 40, message = 'Fetching package info...' }) {
     return (
         <>
             <style>{spinnerKeyframes}</style>

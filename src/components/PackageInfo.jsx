@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import StatusBadge from './StatusBadge';
 import InfoRow from './InfoRow';
 
@@ -25,7 +25,7 @@ function SectionCard({ title, icon, children }) {
 export default function PackageInfo({ pkg }) {
     const dimensions =
         pkg.length && pkg.width && pkg.height
-            ? `${pkg.length} × ${pkg.width} × ${pkg.height} cm`
+            ? `${pkg.length} x ${pkg.width} x ${pkg.height} cm`
             : null;
 
     const receiverName =
@@ -71,7 +71,7 @@ export default function PackageInfo({ pkg }) {
     );
 }
 
-/* ── SVG icons ── */
+/* -- SVG icons -- */
 function BoxIcon() {
     return (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -105,7 +105,7 @@ function ClockIcon() {
     );
 }
 
-/* ── Styles ── */
+/* -- Styles -- */
 const styles = {
     wrapper: {
         display: 'flex',

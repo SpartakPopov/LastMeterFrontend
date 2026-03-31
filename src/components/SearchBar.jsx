@@ -27,7 +27,7 @@ export default function SearchBar({ onSearch, loading }) {
                 />
             </div>
             <button type="submit" disabled={loading || !value.trim()} style={styles.button}>
-                {loading ? 'Searching…' : 'Track'}
+                {loading ? 'Searching...' : 'Track'}
             </button>
         </form>
     );
