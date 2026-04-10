@@ -2,7 +2,7 @@ import React from 'react';
 import SearchBar from '../components/SearchBar';
 import packageImage from '../assets/package.png';
 
-export default function HomePage({ onSearch, loading }) {
+export default function HomePage({ onSearch, loading, onCreatePackage }) {
     return (
         <div style={styles.page}>
             {/* Background blobs */}
@@ -18,6 +18,9 @@ export default function HomePage({ onSearch, loading }) {
                     Enter your tracking number below to get delivery updates
                 </p>
                 <SearchBar onSearch={onSearch} loading={loading} />
+                <button onClick={onCreatePackage} style={styles.createBtn}>
+                    + Create Package
+                </button>
             </div>
 
         </div>
@@ -102,6 +105,19 @@ const styles = {
         color: '#9ca3af',
         marginTop: '-4px',
         fontFamily: 'DM Mono, monospace',
+    },
+    createBtn: {
+        marginTop: '4px',
+        padding: '10px 22px',
+        borderRadius: '10px',
+        border: '1.5px solid #d1fae5',
+        backgroundColor: '#f0fdf4',
+        color: '#15803d',
+        fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.9rem',
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'background-color 0.15s',
     },
     footer: {
         position: 'absolute',

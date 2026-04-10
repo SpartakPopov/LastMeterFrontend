@@ -2,10 +2,11 @@ import React, { useState, useCallback } from 'react';
 import './styles/global.css';
 import HomePage from './pages/HomePage';
 import TrackingResultPage from './pages/TrackingResultPage';
+import CreatePackagePage from './pages/CreatePackagePage';
 import { fetchPackageByTrackingNumber } from './services/packageService';
 
 export default function App() {
-    const [page, setPage] = useState('home');          // 'home' | 'result'
+    const [page, setPage] = useState('home');          // 'home' | 'result' | 'create'
     const [trackingNumber, setTrackingNumber] = useState('');
     const [packageData, setPackageData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -47,5 +48,14 @@ export default function App() {
         );
     }
 
-    return <HomePage onSearch={handleSearch} loading={loading} />;
+    if (page === 'create') {
+        return (
+            <CreatePackagePage
+                onBack={handleBack}
+                onCreated={() => {}}
+            />
+        );
+    }
+
+    return <HomePage onSearch={handleSearch} loading={loading} onCreatePackage={() => setPage('create')} />;
 }
