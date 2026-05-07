@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { createPackage } from '../services/packageService';
 import StatusBadge from '../components/StatusBadge';
+import UserSearchDropdown from '../components/UserSearchDropdown';
 
 export default function CreatePackagePage({ onBack, onCreated }) {
     const [form, setForm] = useState({
         trackingNumber: '',
-        receiverId: '',
         description: '',
         length: '',
         width: '',
         height: '',
     });
+    const [selectedUser, setSelectedUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
@@ -26,7 +27,7 @@ export default function CreatePackagePage({ onBack, onCreated }) {
         try {
             const pkg = await createPackage({
                 trackingNumber: form.trackingNumber,
-                receiverId: form.receiverId ? Number(form.receiverId) : null,
+                receiverId: selectedUser ? selectedUser.id : null,
                 description: form.description || null,
                 length: form.length ? Number(form.length) : null,
                 width: form.width ? Number(form.width) : null,
@@ -137,13 +138,14 @@ export default function CreatePackagePage({ onBack, onCreated }) {
                                 {/* Right column */}
                                 <div style={styles.column}>
                                     <SectionCard title="Recipient" icon={<PersonIcon />}>
-                                        <Field
-                                            label="Receiver ID"
-                                            name="receiverId"
-                                            value={form.receiverId}
-                                            onChange={handleChange}
-                                            placeholder="e.g. 42"
-                                        />
+                                        <label style={styles.field}>
+                                            <span style={styles.fieldLabel}>Receiver (optional)</span>
+                                            <UserSearchDropdown
+                                                value={selectedUser}
+                                                onChange={setSelectedUser}
+                                                placeholder="Type a name to search…"
+                                            />
+                                        </label>
                                     </SectionCard>
                                 </div>
                             </div>

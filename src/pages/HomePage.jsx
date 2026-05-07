@@ -2,7 +2,7 @@ import React from 'react';
 import SearchBar from '../components/SearchBar';
 import packageImage from '../assets/package.png';
 
-export default function HomePage({ onSearch, loading, onCreatePackage }) {
+export default function HomePage({ onSearch, loading, onCreatePackage, onViewUnclaimed, onViewOrderRequests, onCreateOrderRequest }) {
     return (
         <div style={styles.page}>
             {/* Background blobs */}
@@ -18,9 +18,20 @@ export default function HomePage({ onSearch, loading, onCreatePackage }) {
                     Enter your tracking number below to get delivery updates
                 </p>
                 <SearchBar onSearch={onSearch} loading={loading} />
-                <button onClick={onCreatePackage} style={styles.createBtn}>
-                    + Create Package
-                </button>
+                <div style={styles.btnRow}>
+                    <button onClick={onCreatePackage} style={styles.actionBtn}>
+                        + Create Package
+                    </button>
+                    <button onClick={onCreateOrderRequest} style={styles.actionBtn}>
+                        + Order Request
+                    </button>
+                    <button onClick={onViewUnclaimed} style={styles.actionBtn}>
+                        Unclaimed Packages
+                    </button>
+                    <button onClick={onViewOrderRequests} style={styles.actionBtn}>
+                        Order Requests
+                    </button>
+                </div>
             </div>
 
         </div>
@@ -106,8 +117,14 @@ const styles = {
         marginTop: '-4px',
         fontFamily: 'DM Mono, monospace',
     },
-    createBtn: {
+    btnRow: {
         marginTop: '4px',
+        display: 'flex',
+        gap: '10px',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+    },
+    actionBtn: {
         padding: '10px 22px',
         borderRadius: '10px',
         border: '1.5px solid #d1fae5',

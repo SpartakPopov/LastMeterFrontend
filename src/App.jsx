@@ -3,10 +3,13 @@ import './styles/global.css';
 import HomePage from './pages/HomePage';
 import TrackingResultPage from './pages/TrackingResultPage';
 import CreatePackagePage from './pages/CreatePackagePage';
+import UnclaimedPackagesPage from './pages/UnclaimedPackagesPage';
+import OrderRequestsPage from './pages/OrderRequestsPage';
+import CreateOrderRequestPage from './pages/CreateOrderRequestPage';
 import { fetchPackageByTrackingNumber } from './services/packageService';
 
 export default function App() {
-    const [page, setPage] = useState('home');          // 'home' | 'result' | 'create'
+    const [page, setPage] = useState('home');
     const [trackingNumber, setTrackingNumber] = useState('');
     const [packageData, setPackageData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -49,13 +52,29 @@ export default function App() {
     }
 
     if (page === 'create') {
-        return (
-            <CreatePackagePage
-                onBack={handleBack}
-                onCreated={() => {}}
-            />
-        );
+        return <CreatePackagePage onBack={handleBack} onCreated={() => {}} />;
     }
 
-    return <HomePage onSearch={handleSearch} loading={loading} onCreatePackage={() => setPage('create')} />;
+    if (page === 'unclaimed') {
+        return <UnclaimedPackagesPage onBack={handleBack} />;
+    }
+
+    if (page === 'orderRequests') {
+        return <OrderRequestsPage onBack={handleBack} />;
+    }
+
+    if (page === 'createOrderRequest') {
+        return <CreateOrderRequestPage onBack={handleBack} />;
+    }
+
+    return (
+        <HomePage
+            onSearch={handleSearch}
+            loading={loading}
+            onCreatePackage={() => setPage('create')}
+            onViewUnclaimed={() => setPage('unclaimed')}
+            onViewOrderRequests={() => setPage('orderRequests')}
+            onCreateOrderRequest={() => setPage('createOrderRequest')}
+        />
+    );
 }
