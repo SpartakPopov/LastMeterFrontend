@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
 import { fetchUnassignedPackages } from '../services/packageService';
 
-export default function UnclaimedPackagesPage({ onBack }) {
+export default function UnclaimedPackagesPage() {
     const [packages, setPackages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,13 +17,6 @@ export default function UnclaimedPackagesPage({ onBack }) {
 
     return (
         <div style={styles.page}>
-            <header style={styles.header}>
-                <button onClick={onBack} style={styles.backBtn}>
-                    <ChevronLeftIcon /> <span>Back</span>
-                </button>
-                <span style={styles.logoText}>LastMeter</span>
-            </header>
-
             <main style={styles.main}>
                 <div style={styles.shell}>
                     <div style={styles.pageTitle}>

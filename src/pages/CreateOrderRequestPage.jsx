@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createOrderRequest } from '../services/orderRequestService';
 import UserSearchDropdown from '../components/UserSearchDropdown';
 
-export default function CreateOrderRequestPage({ onBack }) {
+export default function CreateOrderRequestPage() {
     const [requestedBy, setRequestedBy] = useState(null);
     const [requestedFor, setRequestedFor] = useState(null);
     const [sameUser, setSameUser] = useState(true);
@@ -41,13 +41,6 @@ export default function CreateOrderRequestPage({ onBack }) {
 
     return (
         <div style={styles.page}>
-            <header style={styles.header}>
-                <button onClick={onBack} style={styles.backBtn}>
-                    <ChevronLeftIcon /> <span>Back</span>
-                </button>
-                <span style={styles.logoText}>LastMeter</span>
-            </header>
-
             <main style={styles.main}>
                 <div style={styles.shell}>
                     <div style={styles.pageTitle}>
@@ -164,7 +157,7 @@ export default function CreateOrderRequestPage({ onBack }) {
                             )}
 
                             <div style={styles.actions}>
-                                <button type="button" onClick={onBack} style={styles.cancelBtn} disabled={loading}>
+                                <button type="button" onClick={() => window.history.back()} style={styles.cancelBtn} disabled={loading}>
                                     Cancel
                                 </button>
                                 <button type="submit" style={{ ...styles.submitBtn, opacity: (!isValid || loading) ? 0.5 : 1 }} disabled={!isValid || loading}>
@@ -269,10 +262,11 @@ const styles = {
     form: { display: 'flex', flexDirection: 'column', gap: '24px' },
     grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' },
     column: { display: 'flex', flexDirection: 'column', gap: '20px' },
-    card: { backgroundColor: '#fff', borderRadius: '18px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' },
+    card: { backgroundColor: '#fff', borderRadius: '18px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' },
     cardHeader: {
         display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 22px',
         borderBottom: '1px solid #f0fdf4', backgroundColor: '#f0fdf4',
+        borderRadius: '18px 18px 0 0',
     },
     cardIcon: { display: 'flex', alignItems: 'center', color: '#16a34a' },
     cardTitle: { fontSize: '0.85rem', fontWeight: 600, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' },

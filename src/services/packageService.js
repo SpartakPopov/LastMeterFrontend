@@ -15,6 +15,12 @@ export async function createPackage(data) {
     return response.json();
 }
 
+export async function fetchAllPackages() {
+    const response = await fetch(`${BASE_URL}/packages/all`);
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    return response.json();
+}
+
 export async function fetchUnassignedPackages() {
     const response = await fetch(`${BASE_URL}/packages/unassigned`);
     if (!response.ok) throw new Error(`Server error: ${response.status}`);

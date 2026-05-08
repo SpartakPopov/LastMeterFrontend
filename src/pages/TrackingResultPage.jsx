@@ -2,20 +2,9 @@ import React from 'react';
 import PackageInfo from '../components/PackageInfo';
 import LoadingSpinner from '../components/LoadingSpinner';
 import packageImage from '../assets/package.png';
-export default function TrackingResultPage({ trackingNumber, packageData, loading, error, onBack, onSearch }) {
+export default function TrackingResultPage({ trackingNumber, packageData, loading, error, onSearch }) {
     return (
         <div style={styles.page}>
-            {/* Top nav */}
-            <header style={styles.header}>
-                <button onClick={onBack} style={styles.backBtn}>
-                    <ChevronLeftIcon />
-                    <span>Back</span>
-                </button>
-                <div style={styles.logo}>
-                    <span style={styles.logoText}>LastMeter</span>
-                </div>
-            </header>
-
             <main style={styles.main}>
                 <div style={styles.container}>
                     {loading && <LoadingSpinner />}

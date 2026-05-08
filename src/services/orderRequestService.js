@@ -39,11 +39,11 @@ export async function rejectOrderRequest(id, managerNotes) {
     return response.json();
 }
 
-export async function fulfillOrderRequest(id, trackingNumbers) {
+export async function fulfillOrderRequest(id, packages) {
     const response = await fetch(`${BASE_URL}/order-requests/${id}/fulfill`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackingNumbers }),
+        body: JSON.stringify({ packages }),
     });
     if (!response.ok) throw new Error(`Server error: ${response.status}`);
     return response.json();

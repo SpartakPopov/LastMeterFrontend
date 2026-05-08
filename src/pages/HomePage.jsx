@@ -2,7 +2,7 @@ import React from 'react';
 import SearchBar from '../components/SearchBar';
 import packageImage from '../assets/package.png';
 
-export default function HomePage({ onSearch, loading, onCreatePackage, onViewUnclaimed, onViewOrderRequests, onCreateOrderRequest }) {
+export default function HomePage({ onSearch, loading }) {
     return (
         <div style={styles.page}>
             {/* Background blobs */}
@@ -18,20 +18,6 @@ export default function HomePage({ onSearch, loading, onCreatePackage, onViewUnc
                     Enter your tracking number below to get delivery updates
                 </p>
                 <SearchBar onSearch={onSearch} loading={loading} />
-                <div style={styles.btnRow}>
-                    <button onClick={onCreatePackage} style={styles.actionBtn}>
-                        + Create Package
-                    </button>
-                    <button onClick={onCreateOrderRequest} style={styles.actionBtn}>
-                        + Order Request
-                    </button>
-                    <button onClick={onViewUnclaimed} style={styles.actionBtn}>
-                        Unclaimed Packages
-                    </button>
-                    <button onClick={onViewOrderRequests} style={styles.actionBtn}>
-                        Order Requests
-                    </button>
-                </div>
             </div>
 
         </div>

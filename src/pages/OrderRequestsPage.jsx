@@ -13,7 +13,7 @@ const STATUS_COLORS = {
     ORDERED:  { bg: '#e0f2fe', color: '#0369a1' },
 };
 
-export default function OrderRequestsPage({ onBack }) {
+export default function OrderRequestsPage() {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -41,7 +41,7 @@ export default function OrderRequestsPage({ onBack }) {
         try {
             if (type === 'approve') await approveOrderRequest(id, payload.notes);
             else if (type === 'reject') await rejectOrderRequest(id, payload.notes);
-            else if (type === 'fulfill') await fulfillOrderRequest(id, payload.trackingNumbers);
+            else if (type === 'fulfill') await fulfillOrderRequest(id, payload.packages);
             setActionModal(null);
             await reload();
         } catch (e) {
@@ -51,13 +51,6 @@ export default function OrderRequestsPage({ onBack }) {
 
     return (
         <div style={styles.page}>
-            <header style={styles.header}>
-                <button onClick={onBack} style={styles.backBtn}>
-                    <ChevronLeftIcon /> <span>Back</span>
-                </button>
-                <span style={styles.logoText}>LastMeter</span>
-            </header>
-
             <main style={styles.main}>
                 <div style={styles.shell}>
                     <div style={styles.pageTitle}>
@@ -154,28 +147,32 @@ function RequestCard({ req, onAction }) {
     );
 }
 
+const emptyPkg = () => ({ trackingNumber: '', description: '', length: '', width: '', height: '' });
+
 function ActionModal({ req, type, error, onSubmit, onClose }) {
     const [notes, setNotes] = useState('');
-    const [trackingInputs, setTrackingInputs] = useState(['']);
+    const [pkgInputs, setPkgInputs] = useState([emptyPkg()]);
 
-    function addTracking() {
-        setTrackingInputs(prev => [...prev, '']);
-    }
-
-    function removeTracking(i) {
-        setTrackingInputs(prev => prev.filter((_, idx) => idx !== i));
-    }
-
-    function updateTracking(i, val) {
-        setTrackingInputs(prev => prev.map((v, idx) => idx === i ? val : v));
+    function addPkg() { setPkgInputs(prev => [...prev, emptyPkg()]); }
+    function removePkg(i) { setPkgInputs(prev => prev.filter((_, idx) => idx !== i)); }
+    function updatePkg(i, field, val) {
+        setPkgInputs(prev => prev.map((p, idx) => idx === i ? { ...p, [field]: val } : p));
     }
 
     function handleSubmit(e) {
         e.preventDefault();
         if (type === 'fulfill') {
-            const nums = trackingInputs.map(t => t.trim()).filter(Boolean);
-            if (nums.length === 0) return;
-            onSubmit({ trackingNumbers: nums });
+            const packages = pkgInputs
+                .filter(p => p.trackingNumber.trim())
+                .map(p => ({
+                    trackingNumber: p.trackingNumber.trim(),
+                    description: p.description.trim() || null,
+                    length: p.length ? Number(p.length) : null,
+                    width: p.width ? Number(p.width) : null,
+                    height: p.height ? Number(p.height) : null,
+                }));
+            if (packages.length === 0) return;
+            onSubmit({ packages });
         } else {
             onSubmit({ notes });
         }
@@ -186,7 +183,7 @@ function ActionModal({ req, type, error, onSubmit, onClose }) {
 
     return (
         <div style={styles.overlay} onClick={onClose}>
-            <div style={styles.modal} onClick={e => e.stopPropagation()}>
+            <div style={{ ...styles.modal, maxWidth: isFulfill ? 580 : 480 }} onClick={e => e.stopPropagation()}>
                 <h2 style={styles.modalTitle}>{titles[type]}</h2>
                 <p style={styles.modalSub}>
                     Request #{req.id} — for <strong>{req.requestedForFirstName} {req.requestedForLastName}</strong>
@@ -210,26 +207,39 @@ function ActionModal({ req, type, error, onSubmit, onClose }) {
 
                     {isFulfill && (
                         <div style={styles.trackingSection}>
-                            <span style={styles.fieldLabel}>Tracking Numbers</span>
-                            <p style={styles.trackingHint}>
-                                Add one tracking number per package (e.g. one from Amazon, one from Alibaba).
-                            </p>
-                            {trackingInputs.map((val, i) => (
-                                <div key={i} style={styles.trackingRow}>
+                            <span style={styles.fieldLabel}>Packages</span>
+                            <p style={styles.trackingHint}>Add one entry per package. Tracking number is required; description and dimensions are optional.</p>
+                            {pkgInputs.map((pkg, i) => (
+                                <div key={i} style={styles.pkgCard}>
+                                    <div style={styles.pkgCardHeader}>
+                                        <span style={styles.pkgLabel}>Package {i + 1}</span>
+                                        {pkgInputs.length > 1 && (
+                                            <button type="button" style={styles.removeBtn} onClick={() => removePkg(i)}>✕ Remove</button>
+                                        )}
+                                    </div>
                                     <input
                                         type="text"
-                                        value={val}
-                                        onChange={e => updateTracking(i, e.target.value)}
-                                        placeholder={`Tracking #${i + 1}`}
+                                        value={pkg.trackingNumber}
+                                        onChange={e => updatePkg(i, 'trackingNumber', e.target.value)}
+                                        placeholder="Tracking number *"
                                         style={styles.trackingInput}
                                         required={i === 0}
                                     />
-                                    {trackingInputs.length > 1 && (
-                                        <button type="button" style={styles.removeBtn} onClick={() => removeTracking(i)}>✕</button>
-                                    )}
+                                    <input
+                                        type="text"
+                                        value={pkg.description}
+                                        onChange={e => updatePkg(i, 'description', e.target.value)}
+                                        placeholder="Description (optional)"
+                                        style={styles.pkgInput}
+                                    />
+                                    <div style={styles.dimsRow}>
+                                        <input type="number" value={pkg.length} onChange={e => updatePkg(i, 'length', e.target.value)} placeholder="L (cm)" style={styles.dimInput} />
+                                        <input type="number" value={pkg.width} onChange={e => updatePkg(i, 'width', e.target.value)} placeholder="W (cm)" style={styles.dimInput} />
+                                        <input type="number" value={pkg.height} onChange={e => updatePkg(i, 'height', e.target.value)} placeholder="H (cm)" style={styles.dimInput} />
+                                    </div>
                                 </div>
                             ))}
-                            <button type="button" style={styles.addTrackingBtn} onClick={addTracking}>
+                            <button type="button" style={styles.addTrackingBtn} onClick={addPkg}>
                                 + Add another package
                             </button>
                         </div>
@@ -244,10 +254,7 @@ function ActionModal({ req, type, error, onSubmit, onClose }) {
 
                     <div style={styles.modalActions}>
                         <button type="button" style={styles.cancelBtn} onClick={onClose}>Cancel</button>
-                        <button
-                            type="submit"
-                            style={type === 'reject' ? styles.rejectBtnPrimary : styles.approveBtnPrimary}
-                        >
+                        <button type="submit" style={type === 'reject' ? styles.rejectBtnPrimary : styles.approveBtnPrimary}>
                             {isFulfill ? 'Create Packages' : type === 'approve' ? 'Approve' : 'Reject'}
                         </button>
                     </div>
@@ -380,18 +387,33 @@ const styles = {
         fontSize: '0.92rem', color: '#111827', resize: 'vertical',
         boxSizing: 'border-box', outline: 'none',
     },
-    trackingSection: { display: 'flex', flexDirection: 'column', gap: '8px' },
+    trackingSection: { display: 'flex', flexDirection: 'column', gap: '10px' },
     trackingHint: { fontSize: '0.8rem', color: '#9ca3af', margin: 0, fontFamily: 'Outfit, sans-serif' },
-    trackingRow: { display: 'flex', gap: '8px', alignItems: 'center' },
+    pkgCard: {
+        display: 'flex', flexDirection: 'column', gap: '8px',
+        padding: '14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', backgroundColor: '#fafafa',
+    },
+    pkgCardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+    pkgLabel: { fontSize: '0.78rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Outfit, sans-serif' },
     trackingInput: {
-        flex: 1, padding: '9px 14px', borderRadius: '10px',
+        width: '100%', padding: '9px 14px', borderRadius: '10px', boxSizing: 'border-box',
         border: '1.5px solid #e5e7eb', fontFamily: 'DM Mono, monospace',
+        fontSize: '0.88rem', color: '#111827', outline: 'none', letterSpacing: '0.04em',
+    },
+    pkgInput: {
+        width: '100%', padding: '9px 14px', borderRadius: '10px', boxSizing: 'border-box',
+        border: '1.5px solid #e5e7eb', fontFamily: 'Outfit, sans-serif',
         fontSize: '0.88rem', color: '#111827', outline: 'none',
-        letterSpacing: '0.04em',
+    },
+    dimsRow: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' },
+    dimInput: {
+        padding: '9px 10px', borderRadius: '10px', border: '1.5px solid #e5e7eb',
+        fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', color: '#111827',
+        outline: 'none', width: '100%', boxSizing: 'border-box',
     },
     removeBtn: {
-        padding: '6px 10px', borderRadius: '8px', border: '1px solid #e5e7eb',
-        backgroundColor: '#f9fafb', color: '#6b7280', cursor: 'pointer', fontSize: '0.8rem',
+        padding: '4px 10px', borderRadius: '6px', border: '1px solid #fecaca',
+        backgroundColor: '#fff5f5', color: '#b91c1c', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif',
     },
     addTrackingBtn: {
         padding: '8px 14px', borderRadius: '8px', border: '1.5px dashed #d1fae5',

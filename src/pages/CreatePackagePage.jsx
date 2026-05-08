@@ -3,7 +3,7 @@ import { createPackage } from '../services/packageService';
 import StatusBadge from '../components/StatusBadge';
 import UserSearchDropdown from '../components/UserSearchDropdown';
 
-export default function CreatePackagePage({ onBack, onCreated }) {
+export default function CreatePackagePage({ onCreated }) {
     const [form, setForm] = useState({
         trackingNumber: '',
         description: '',
@@ -48,14 +48,6 @@ export default function CreatePackagePage({ onBack, onCreated }) {
     return (
         <div style={styles.page}>
             {/* Header */}
-            <header style={styles.header}>
-                <button onClick={onBack} style={styles.backBtn}>
-                    <ChevronLeftIcon />
-                    <span>Back</span>
-                </button>
-                <span style={styles.logoText}>LastMeter</span>
-            </header>
-
             <main style={styles.main}>
                 <div style={styles.shell}>
                     {/* Page title */}
@@ -158,7 +150,7 @@ export default function CreatePackagePage({ onBack, onCreated }) {
                             )}
 
                             <div style={styles.actions}>
-                                <button type="button" onClick={onBack} style={styles.cancelBtn} disabled={loading}>
+                                <button type="button" onClick={() => window.history.back()} style={styles.cancelBtn} disabled={loading}>
                                     Cancel
                                 </button>
                                 <button type="submit" style={styles.submitBtn} disabled={!isValid || loading}>
@@ -360,7 +352,6 @@ const styles = {
     card: {
         backgroundColor: '#ffffff',
         borderRadius: '18px',
-        overflow: 'hidden',
         boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
     },
     cardHeader: {
@@ -371,6 +362,7 @@ const styles = {
         borderBottom: '1px solid #f0fdf4',
         backgroundColor: '#f0fdf4',
         color: '#16a34a',
+        borderRadius: '18px 18px 0 0',
     },
     cardIcon: {
         display: 'flex',
