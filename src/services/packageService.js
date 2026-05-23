@@ -27,6 +27,19 @@ export async function fetchUnassignedPackages() {
     return response.json();
 }
 
+export async function updatePackage(id, data) {
+    const response = await fetch(`${BASE_URL}/packages/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        const msg = await response.text().catch(() => '');
+        throw new Error(msg || `Server error: ${response.status}`);
+    }
+    return response.json();
+}
+
 export async function fetchPackageByTrackingNumber(trackingNumber) {
     const response = await fetch(`${BASE_URL}/packages/${encodeURIComponent(trackingNumber)}`);
 

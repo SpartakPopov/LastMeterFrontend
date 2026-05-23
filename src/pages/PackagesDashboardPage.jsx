@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { fetchAllPackages } from '../services/packageService';
+import React, { useState, useEffect, useCallback } from 'react';
+import { fetchAllPackages, updatePackage } from '../services/packageService';
+import { useToast, ToastContainer } from '../components/Toast';
 
 const STATUSES = ['ALL', 'PENDING', 'ASSIGNED_TO_LOCKER', 'DELIVERED_TO_LOCKER', 'PICKED_UP'];
 
@@ -15,13 +16,29 @@ export default function PackagesDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState('ALL');
+    const [editPkg, setEditPkg] = useState(null);
+    const { toasts, toast, removeToast } = useToast();
 
-    useEffect(() => {
+    const reload = useCallback(() => {
+        setLoading(true);
         fetchAllPackages()
             .then(setPackages)
             .catch(e => setError(e.message))
             .finally(() => setLoading(false));
     }, []);
+
+    useEffect(() => { reload(); }, [reload]);
+
+    async function handleSaveEdit(id, data) {
+        try {
+            await updatePackage(id, data);
+            setEditPkg(null);
+            reload();
+            toast('Package updated successfully.', 'success');
+        } catch (e) {
+            toast(e.message, 'error');
+        }
+    }
 
     const visible = filter === 'ALL' ? packages : packages.filter(p => p.status === filter);
 
@@ -46,17 +63,13 @@ export default function PackagesDashboardPage() {
                         {STATUSES.map(s => (
                             <button
                                 key={s}
-                                style={{
-                                    ...styles.filterBtn,
-                                    ...(filter === s ? styles.filterBtnActive : {}),
-                                }}
+                                style={{ ...styles.filterBtn, ...(filter === s ? styles.filterBtnActive : {}) }}
                                 onClick={() => setFilter(s)}
                             >
                                 {s === 'ALL' ? 'All' : s.replace(/_/g, ' ')}
-                                <span style={{
-                                    ...styles.filterCount,
-                                    ...(filter === s ? styles.filterCountActive : {}),
-                                }}>{counts[s]}</span>
+                                <span style={{ ...styles.filterCount, ...(filter === s ? styles.filterCountActive : {}) }}>
+                                    {counts[s]}
+                                </span>
                             </button>
                         ))}
                     </div>
@@ -72,7 +85,7 @@ export default function PackagesDashboardPage() {
                             <table style={styles.table}>
                                 <thead>
                                     <tr>
-                                        {['Tracking Number', 'Description', 'Dimensions', 'Receiver', 'Status'].map(h => (
+                                        {['Tracking Number', 'Description', 'Dimensions', 'Receiver', 'Status', ''].map(h => (
                                             <th key={h} style={styles.th}>{h}</th>
                                         ))}
                                     </tr>
@@ -100,6 +113,11 @@ export default function PackagesDashboardPage() {
                                                         {pkg.status.replace(/_/g, ' ')}
                                                     </span>
                                                 </td>
+                                                <td style={styles.tdAction}>
+                                                    <button style={styles.editBtn} onClick={() => setEditPkg(pkg)}>
+                                                        <PencilIcon /> Edit
+                                                    </button>
+                                                </td>
                                             </tr>
                                         );
                                     })}
@@ -109,15 +127,89 @@ export default function PackagesDashboardPage() {
                     )}
                 </div>
             </main>
+
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+            {editPkg && (
+                <EditModal
+                    pkg={editPkg}
+                    onSave={(data) => handleSaveEdit(editPkg.id, data)}
+                    onClose={() => setEditPkg(null)}
+                />
+            )}
         </div>
     );
 }
 
-function ChevronLeftIcon() {
+function EditModal({ pkg, onSave, onClose }) {
+    const [trackingNumber, setTrackingNumber] = useState(pkg.trackingNumber || '');
+    const [description, setDescription] = useState(pkg.description || '');
+    const [length, setLength] = useState(pkg.length ?? '');
+    const [width, setWidth] = useState(pkg.width ?? '');
+    const [height, setHeight] = useState(pkg.height ?? '');
+    const [saving, setSaving] = useState(false);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        if (!trackingNumber.trim()) return;
+        setSaving(true);
+        await onSave({
+            trackingNumber: trackingNumber.trim(),
+            description: description.trim() || null,
+            length: length !== '' ? Number(length) : null,
+            width: width !== '' ? Number(width) : null,
+            height: height !== '' ? Number(height) : null,
+        });
+        setSaving(false);
+    }
+
     return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-        </svg>
+        <div style={styles.overlay} onClick={onClose}>
+            <div style={styles.modal} onClick={e => e.stopPropagation()}>
+                <h2 style={styles.modalTitle}>Edit Package</h2>
+                <p style={styles.modalSub}>Update the package information below.</p>
+
+                <form onSubmit={handleSubmit} style={styles.modalForm}>
+                    <label style={styles.field}>
+                        <span style={styles.fieldLabel}>Tracking Number *</span>
+                        <input
+                            type="text"
+                            value={trackingNumber}
+                            onChange={e => setTrackingNumber(e.target.value)}
+                            required
+                            style={styles.inputMono}
+                        />
+                    </label>
+
+                    <label style={styles.field}>
+                        <span style={styles.fieldLabel}>Description</span>
+                        <input
+                            type="text"
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
+                            placeholder="Optional description"
+                            style={styles.input}
+                        />
+                    </label>
+
+                    <div>
+                        <span style={styles.fieldLabel}>Dimensions (cm)</span>
+                        <div style={styles.dimsRow}>
+                            <input type="number" value={length} onChange={e => setLength(e.target.value)} placeholder="Length" style={styles.dimInput} min="0" step="0.01" />
+                            <input type="number" value={width} onChange={e => setWidth(e.target.value)} placeholder="Width" style={styles.dimInput} min="0" step="0.01" />
+                            <input type="number" value={height} onChange={e => setHeight(e.target.value)} placeholder="Height" style={styles.dimInput} min="0" step="0.01" />
+                        </div>
+                    </div>
+
+                    <div style={styles.modalActions}>
+                        <button type="button" style={styles.cancelBtn} onClick={onClose}>Cancel</button>
+                        <button type="submit" style={styles.saveBtn} disabled={saving}>
+                            {saving ? 'Saving…' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 }
 
@@ -130,20 +222,17 @@ function GridIcon() {
     );
 }
 
+function PencilIcon() {
+    return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+    );
+}
+
 const styles = {
     page: { minHeight: '100vh', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' },
-    header: {
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 28px', backgroundColor: '#fff', borderBottom: '1px solid #f3f4f6',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.04)', position: 'sticky', top: 0, zIndex: 10,
-    },
-    backBtn: {
-        display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 14px',
-        borderRadius: '10px', backgroundColor: '#f3f4f6', color: '#374151',
-        fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 600,
-        cursor: 'pointer', border: 'none',
-    },
-    logoText: { fontWeight: 700, fontSize: '1rem', color: '#15803d', letterSpacing: '-0.01em' },
     main: { flex: 1, display: 'flex', justifyContent: 'center', padding: '36px 28px 60px' },
     shell: { width: '100%', maxWidth: '1100px', display: 'flex', flexDirection: 'column', gap: '24px' },
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
@@ -159,11 +248,9 @@ const styles = {
         display: 'flex', alignItems: 'center', gap: '6px',
         padding: '8px 16px', borderRadius: '10px', border: '1.5px solid #e5e7eb',
         backgroundColor: '#fff', color: '#374151', fontFamily: 'Outfit, sans-serif',
-        fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+        fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
     },
-    filterBtnActive: {
-        backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#15803d',
-    },
+    filterBtnActive: { backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#15803d' },
     filterCount: {
         fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#f3f4f6',
         color: '#6b7280', borderRadius: '20px', padding: '1px 7px',
@@ -196,11 +283,69 @@ const styles = {
         borderBottom: '1px solid #f9fafb', fontFamily: 'DM Mono, monospace',
         letterSpacing: '0.04em', verticalAlign: 'middle',
     },
+    tdAction: {
+        padding: '10px 14px', borderBottom: '1px solid #f9fafb', verticalAlign: 'middle',
+    },
     badge: {
         fontSize: '0.75rem', fontWeight: 700, borderRadius: '6px',
         padding: '3px 9px', letterSpacing: '0.03em', whiteSpace: 'nowrap',
     },
+    editBtn: {
+        display: 'inline-flex', alignItems: 'center', gap: '5px',
+        padding: '6px 12px', borderRadius: '8px',
+        border: '1.5px solid #e5e7eb', backgroundColor: '#fff',
+        color: '#374151', fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+        whiteSpace: 'nowrap',
+    },
     none: { color: '#d1d5db' },
     mono: { fontFamily: 'DM Mono, monospace', fontSize: '0.82rem' },
     unclaimed: { color: '#f59e0b', fontWeight: 600, fontSize: '0.85rem' },
+
+    // Modal
+    overlay: {
+        position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
+    },
+    modal: {
+        backgroundColor: '#fff', borderRadius: '20px', padding: '32px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)', width: '90%', maxWidth: '460px',
+        display: 'flex', flexDirection: 'column', gap: '20px',
+    },
+    modalTitle: { fontSize: '1.2rem', fontWeight: 700, color: '#111827', margin: 0 },
+    modalSub: { fontSize: '0.88rem', color: '#6b7280', margin: 0, fontFamily: 'Outfit, sans-serif' },
+    modalForm: { display: 'flex', flexDirection: 'column', gap: '16px' },
+    field: { display: 'flex', flexDirection: 'column', gap: '6px' },
+    fieldLabel: {
+        fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
+        letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Outfit, sans-serif',
+        display: 'block', marginBottom: '4px',
+    },
+    input: {
+        width: '100%', padding: '10px 14px', borderRadius: '10px', boxSizing: 'border-box',
+        border: '1.5px solid #e5e7eb', fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.92rem', color: '#111827', outline: 'none',
+    },
+    inputMono: {
+        width: '100%', padding: '10px 14px', borderRadius: '10px', boxSizing: 'border-box',
+        border: '1.5px solid #e5e7eb', fontFamily: 'DM Mono, monospace',
+        fontSize: '0.88rem', color: '#111827', outline: 'none', letterSpacing: '0.04em',
+    },
+    dimsRow: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '6px' },
+    dimInput: {
+        padding: '10px', borderRadius: '10px', border: '1.5px solid #e5e7eb',
+        fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', color: '#111827',
+        outline: 'none', width: '100%', boxSizing: 'border-box',
+    },
+    modalActions: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '4px' },
+    cancelBtn: {
+        padding: '9px 20px', borderRadius: '10px', border: '1.5px solid #e5e7eb',
+        backgroundColor: '#fff', color: '#374151', fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+    },
+    saveBtn: {
+        padding: '9px 24px', borderRadius: '10px', border: 'none',
+        background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+        fontFamily: 'Outfit, sans-serif', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
+    },
 };

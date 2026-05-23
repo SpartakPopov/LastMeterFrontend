@@ -48,3 +48,27 @@ export async function fulfillOrderRequest(id, packages) {
     if (!response.ok) throw new Error(`Server error: ${response.status}`);
     return response.json();
 }
+
+export async function getAllOrderGroups() {
+    const response = await fetch(`${BASE_URL}/order-groups`);
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    return response.json();
+}
+
+export async function createOrderGroup(name, requestedById, orderRequestIds) {
+    const response = await fetch(`${BASE_URL}/order-groups`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, requestedById, orderRequestIds }),
+    });
+    if (!response.ok) {
+        const msg = await response.text().catch(() => '');
+        throw new Error(msg || `Server error: ${response.status}`);
+    }
+    return response.json();
+}
+
+export async function deleteOrderGroup(id) {
+    const response = await fetch(`${BASE_URL}/order-groups/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+}

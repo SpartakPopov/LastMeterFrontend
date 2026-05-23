@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     getAllOrderRequests,
     approveOrderRequest,
     rejectOrderRequest,
     fulfillOrderRequest,
 } from '../services/orderRequestService';
+import { useToast, ToastContainer } from '../components/Toast';
 
 const STATUS_COLORS = {
     PENDING:  { bg: '#fef3c7', color: '#b45309' },
@@ -13,29 +14,30 @@ const STATUS_COLORS = {
     ORDERED:  { bg: '#e0f2fe', color: '#0369a1' },
 };
 
+const STATUS_ORDER = ['PENDING', 'APPROVED', 'ORDERED', 'REJECTED'];
+
 export default function OrderRequestsPage() {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [actionModal, setActionModal] = useState(null);
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const { toasts, toast, removeToast } = useToast();
 
-    async function reload() {
+    const reload = useCallback(async () => {
         setLoading(true);
         try {
-            setRequests(await getAllOrderRequests());
+            const reqs = await getAllOrderRequests();
+            setRequests(reqs);
             setError(null);
         } catch (e) {
             setError(e.message);
         } finally {
             setLoading(false);
         }
-    }
+    }, []);
 
-    useEffect(() => { reload(); }, []);
-
-    function handleAction(req, type) {
-        setActionModal({ req, type });
-    }
+    useEffect(() => { reload(); }, [reload]);
 
     async function handleModalSubmit(id, type, payload) {
         try {
@@ -44,10 +46,32 @@ export default function OrderRequestsPage() {
             else if (type === 'fulfill') await fulfillOrderRequest(id, payload.packages);
             setActionModal(null);
             await reload();
+            const messages = {
+                approve: `Request #${id} approved.`,
+                reject: `Request #${id} rejected.`,
+                fulfill: `Order placed for request #${id}.`,
+            };
+            toast(messages[type], type === 'reject' ? 'error' : 'success');
         } catch (e) {
             setActionModal(prev => ({ ...prev, error: e.message }));
         }
     }
+
+    const filtered = statusFilter === 'ALL'
+        ? requests
+        : requests.filter(r => r.status === statusFilter);
+
+    // Group by requestedById, preserving insertion order of first occurrence
+    const groupMap = new Map();
+    for (const req of filtered) {
+        const key = req.requestedById;
+        if (!groupMap.has(key)) groupMap.set(key, []);
+        groupMap.get(key).push(req);
+    }
+    const groups = [...groupMap.values()];
+
+    const counts = {};
+    for (const r of requests) counts[r.status] = (counts[r.status] || 0) + 1;
 
     return (
         <div style={styles.page}>
@@ -61,25 +85,45 @@ export default function OrderRequestsPage() {
                         </div>
                     </div>
 
+                    <div style={styles.filterRow}>
+                        {['ALL', ...STATUS_ORDER].map(s => (
+                            <button
+                                key={s}
+                                style={{ ...styles.filterBtn, ...(statusFilter === s ? styles.filterBtnActive : {}) }}
+                                onClick={() => setStatusFilter(s)}
+                            >
+                                {s === 'ALL' ? 'All' : capitalize(s)}
+                                {s !== 'ALL' && counts[s] > 0 && (
+                                    <span style={{ ...styles.filterCount, ...(statusFilter === s ? styles.filterCountActive : {}) }}>
+                                        {counts[s]}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
                     {loading && <p style={styles.hint}>Loading…</p>}
-                    {error && <p style={{ color: '#b91c1c' }}>{error}</p>}
-                    {!loading && !error && requests.length === 0 && (
-                        <div style={styles.emptyCard}>No order requests yet.</div>
+                    {error && <p style={{ color: '#b91c1c', fontFamily: 'Outfit, sans-serif' }}>{error}</p>}
+
+                    {!loading && !error && groups.length === 0 && (
+                        <div style={styles.emptyCard}>No order requests found.</div>
                     )}
 
-                    {!loading && !error && requests.length > 0 && (
+                    {!loading && !error && (
                         <div style={styles.list}>
-                            {requests.map(req => (
-                                <RequestCard
-                                    key={req.id}
-                                    req={req}
-                                    onAction={(type) => handleAction(req, type)}
+                            {groups.map(group => (
+                                <RequesterGroup
+                                    key={group[0].requestedById}
+                                    orders={group}
+                                    onAction={(req, type) => setActionModal({ req, type })}
                                 />
                             ))}
                         </div>
                     )}
                 </div>
             </main>
+
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
 
             {actionModal && (
                 <ActionModal
@@ -94,10 +138,59 @@ export default function OrderRequestsPage() {
     );
 }
 
-function RequestCard({ req, onAction }) {
+function RequesterGroup({ orders, onAction }) {
+    const [collapsed, setCollapsed] = useState(false);
+    const { requestedByFirstName, requestedByLastName } = orders[0];
+    const isSingle = orders.length === 1;
+
+    if (isSingle) {
+        return (
+            <RequestCard req={orders[0]} onAction={(type) => onAction(orders[0], type)} />
+        );
+    }
+
+    return (
+        <div style={styles.groupBox}>
+            <button style={styles.groupHeader} onClick={() => setCollapsed(c => !c)}>
+                <div style={styles.groupHeaderLeft}>
+                    <span style={styles.collapseArrow}>{collapsed ? '▶' : '▼'}</span>
+                    <div style={styles.avatarCircle}>
+                        {requestedByFirstName[0]}{requestedByLastName[0]}
+                    </div>
+                    <div>
+                        <span style={styles.groupRequesterName}>
+                            {requestedByFirstName} {requestedByLastName}
+                        </span>
+                        <span style={styles.groupOrderCount}> · {orders.length} orders</span>
+                    </div>
+                </div>
+                <div style={styles.groupStatusPills}>
+                    {countByStatus(orders).map(([status, count]) => {
+                        const sc = STATUS_COLORS[status] || { bg: '#f3f4f6', color: '#374151' };
+                        return (
+                            <span key={status} style={{ ...styles.statusPill, backgroundColor: sc.bg, color: sc.color }}>
+                                {count} {capitalize(status.toLowerCase())}
+                            </span>
+                        );
+                    })}
+                </div>
+            </button>
+
+            {!collapsed && (
+                <div style={styles.groupBody}>
+                    {orders.map(req => (
+                        <RequestCard key={req.id} req={req} onAction={(type) => onAction(req, type)} nested />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function RequestCard({ req, onAction, nested }) {
     const sc = STATUS_COLORS[req.status] || { bg: '#f3f4f6', color: '#374151' };
     return (
-        <div style={styles.card}>
+        <div style={{ ...styles.card, ...(nested ? styles.nestedCard : {}) }}>
             <div style={styles.cardHeader}>
                 <div style={styles.cardMeta}>
                     <span style={styles.reqId}>#{req.id}</span>
@@ -145,6 +238,16 @@ function RequestCard({ req, onAction }) {
             </div>
         </div>
     );
+}
+
+function countByStatus(orders) {
+    const map = {};
+    for (const o of orders) map[o.status] = (map[o.status] || 0) + 1;
+    return STATUS_ORDER.filter(s => map[s]).map(s => [s, map[s]]);
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 const emptyPkg = () => ({ trackingNumber: '', description: '', length: '', width: '', height: '' });
@@ -264,14 +367,6 @@ function ActionModal({ req, type, error, onSubmit, onClose }) {
     );
 }
 
-function ChevronLeftIcon() {
-    return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-        </svg>
-    );
-}
-
 function AlertIcon() {
     return (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -292,18 +387,6 @@ function ClipboardIcon() {
 
 const styles = {
     page: { minHeight: '100vh', backgroundColor: '#f9fafb', display: 'flex', flexDirection: 'column' },
-    header: {
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 28px', backgroundColor: '#fff', borderBottom: '1px solid #f3f4f6',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.04)', position: 'sticky', top: 0, zIndex: 10,
-    },
-    backBtn: {
-        display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 14px',
-        borderRadius: '10px', backgroundColor: '#f3f4f6', color: '#374151',
-        fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 600,
-        cursor: 'pointer', border: 'none',
-    },
-    logoText: { fontWeight: 700, fontSize: '1rem', color: '#15803d', letterSpacing: '-0.01em' },
     main: { flex: 1, display: 'flex', justifyContent: 'center', padding: '36px 28px 60px' },
     shell: { width: '100%', maxWidth: '860px', display: 'flex', flexDirection: 'column', gap: '24px' },
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
@@ -320,11 +403,60 @@ const styles = {
         textAlign: 'center', color: '#9ca3af', fontFamily: 'Outfit, sans-serif',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
     },
+    filterRow: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
+    filterBtn: {
+        padding: '7px 16px', borderRadius: '999px', border: '1.5px solid #e5e7eb',
+        backgroundColor: '#fff', color: '#6b7280', fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: '6px',
+    },
+    filterBtnActive: {
+        backgroundColor: '#111827', borderColor: '#111827', color: '#fff',
+    },
+    filterCount: {
+        fontSize: '0.72rem', fontWeight: 700, borderRadius: '999px',
+        padding: '1px 7px', backgroundColor: '#f3f4f6', color: '#374151',
+    },
+    filterCountActive: { backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' },
     list: { display: 'flex', flexDirection: 'column', gap: '16px' },
+
+    // Group box
+    groupBox: {
+        backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+        border: '1.5px solid #e0f2fe',
+    },
+    groupHeader: {
+        width: '100%', padding: '14px 20px', backgroundColor: '#f0f9ff',
+        borderBottom: '1px solid #e0f2fe',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        border: 'none', cursor: 'pointer', textAlign: 'left',
+        gap: '12px',
+    },
+    groupHeaderLeft: { display: 'flex', alignItems: 'center', gap: '10px' },
+    collapseArrow: { fontSize: '0.7rem', color: '#0369a1', flexShrink: 0 },
+    avatarCircle: {
+        width: 32, height: 32, borderRadius: '50%',
+        background: 'linear-gradient(135deg, #bae6fd, #7dd3fc)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '0.72rem', fontWeight: 700, color: '#0369a1', flexShrink: 0,
+        letterSpacing: '0.02em',
+    },
+    groupRequesterName: { fontWeight: 700, color: '#0c4a6e', fontFamily: 'Outfit, sans-serif', fontSize: '0.95rem' },
+    groupOrderCount: { color: '#64748b', fontFamily: 'Outfit, sans-serif', fontSize: '0.85rem' },
+    groupStatusPills: { display: 'flex', gap: '6px', flexWrap: 'wrap', flexShrink: 0 },
+    statusPill: {
+        fontSize: '0.7rem', fontWeight: 700, borderRadius: '6px',
+        padding: '2px 8px', letterSpacing: '0.04em',
+    },
+    groupBody: { padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#f8fafc' },
+
+    // Cards
     card: {
         backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden',
         boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
     },
+    nestedCard: { borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' },
     cardHeader: {
         padding: '16px 20px', borderBottom: '1px solid #f3f4f6',
         display: 'flex', flexDirection: 'column', gap: '6px',
@@ -364,6 +496,8 @@ const styles = {
         background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
     },
+
+    // Modal
     overlay: {
         position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
