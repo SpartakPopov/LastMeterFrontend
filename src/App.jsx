@@ -9,7 +9,12 @@ import OrderRequestsPage from './pages/OrderRequestsPage';
 import CreateOrderRequestPage from './pages/CreateOrderRequestPage';
 import PackagesDashboardPage from './pages/PackagesDashboardPage';
 import MyOrdersPage from './pages/MyOrdersPage';
+import NotificationsPage from './pages/NotificationsPage';
 import { fetchPackageByTrackingNumber } from './services/packageService';
+import { fetchUnreadNotifications } from './services/notificationService';
+
+// TODO: Replace with the logged-in user's ID once email authentication is implemented
+const CURRENT_USER_ID = 1;
 
 export default function App() {
     const [page, setPage] = useState('home');
@@ -18,12 +23,28 @@ export default function App() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
         function onResize() { setIsMobile(window.innerWidth < 768); }
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
+
+    const refreshUnreadCount = useCallback(async () => {
+        try {
+            const data = await fetchUnreadNotifications(CURRENT_USER_ID);
+            setUnreadCount(data.length);
+        } catch {
+            // Silently ignore — badge will stay at its last known value
+        }
+    }, []);
+
+    useEffect(() => {
+        refreshUnreadCount();
+        const interval = setInterval(refreshUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, [refreshUnreadCount]);
 
     const handleSearch = useCallback(async (number) => {
         setTrackingNumber(number);
@@ -69,6 +90,14 @@ export default function App() {
                 return <PackagesDashboardPage onViewDetails={handleSearch} />;
             case 'myOrders':
                 return <MyOrdersPage />;
+            case 'notifications':
+                return (
+                    <NotificationsPage
+                        userId={CURRENT_USER_ID}
+                        onViewPackage={handleSearch}
+                        onUnreadCountChange={refreshUnreadCount}
+                    />
+                );
             default:
                 return <HomePage onSearch={handleSearch} loading={loading} />;
         }
@@ -76,7 +105,7 @@ export default function App() {
 
     return (
         <>
-            <Navbar currentPage={page} onNavigate={navigate} />
+            <Navbar currentPage={page} onNavigate={navigate} unreadCount={unreadCount} />
             <div style={contentStyle}>
                 {renderPage()}
             </div>

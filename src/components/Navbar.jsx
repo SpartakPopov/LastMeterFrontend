@@ -11,9 +11,10 @@ const NAV_ITEMS = [
     { key: 'unclaimed',          label: 'Unclaimed Packages',  icon: InboxIcon },
     { key: 'orderRequests',      label: 'Order Requests',      icon: ClipboardIcon },
     { key: 'dashboard',          label: 'Packages Dashboard',  icon: GridIcon },
+    { key: 'notifications',      label: 'Notifications',       icon: BellNavIcon },
 ];
 
-export default function Navbar({ currentPage, onNavigate }) {
+export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [open, setOpen] = useState(false);
 
@@ -39,9 +40,23 @@ export default function Navbar({ currentPage, onNavigate }) {
             <>
                 <div style={styles.topBar}>
                     <span style={styles.logoText}>LastMeter</span>
-                    <button style={styles.burgerBtn} onClick={() => setOpen(o => !o)} aria-label="Menu">
-                        {open ? <XIcon /> : <BurgerIcon />}
-                    </button>
+                    <div style={styles.topBarRight}>
+                        <button
+                            style={styles.bellBtn}
+                            onClick={() => navigate('notifications')}
+                            aria-label="Notifications"
+                        >
+                            <BellNavIcon />
+                            {unreadCount > 0 && (
+                                <span style={styles.topBarBadge}>
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
+                        </button>
+                        <button style={styles.burgerBtn} onClick={() => setOpen(o => !o)} aria-label="Menu">
+                            {open ? <XIcon /> : <BurgerIcon />}
+                        </button>
+                    </div>
                 </div>
 
                 {open && <div style={styles.overlay} onClick={() => setOpen(false)} />}
@@ -50,7 +65,7 @@ export default function Navbar({ currentPage, onNavigate }) {
                     <div style={styles.drawerLogo}>
                         <span style={styles.logoText}>LastMeter</span>
                     </div>
-                    <NavList activeKey={activeKey} navigate={navigate} />
+                    <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} />
                 </div>
             </>
         );
@@ -62,16 +77,19 @@ export default function Navbar({ currentPage, onNavigate }) {
                 <div style={styles.logoMark}>LM</div>
                 <span style={styles.logoText}>LastMeter</span>
             </div>
-            <NavList activeKey={activeKey} navigate={navigate} />
+            <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} />
         </div>
     );
 }
 
-function NavList({ activeKey, navigate }) {
+function NavList({ activeKey, navigate, unreadCount }) {
     return (
         <nav style={styles.nav}>
             {NAV_ITEMS.map(({ key, label, icon: Icon }) => {
                 const active = activeKey === key;
+                const badge = key === 'notifications' && unreadCount > 0
+                    ? (unreadCount > 99 ? '99+' : unreadCount)
+                    : null;
                 return (
                     <button
                         key={key}
@@ -82,6 +100,7 @@ function NavList({ activeKey, navigate }) {
                             <Icon />
                         </span>
                         <span style={active ? styles.navLabelActive : styles.navLabel}>{label}</span>
+                        {badge && <span style={styles.navBadge}>{badge}</span>}
                         {active && <div style={styles.activeBar} />}
                     </button>
                 );
@@ -117,6 +136,9 @@ function BurgerIcon() {
 }
 function XIcon() {
     return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+}
+function BellNavIcon() {
+    return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
 }
 
 const styles = {
@@ -176,6 +198,15 @@ const styles = {
         width: 3, borderRadius: '2px', backgroundColor: '#16a34a',
     },
 
+    navBadge: {
+        marginLeft: 'auto', marginRight: '10px',
+        backgroundColor: '#22c55e', color: '#fff',
+        fontSize: '0.68rem', fontWeight: 700,
+        borderRadius: '12px', padding: '1px 6px',
+        minWidth: '18px', textAlign: 'center',
+        fontFamily: 'Outfit, sans-serif', lineHeight: '16px',
+    },
+
     /* ── Mobile top bar ── */
     topBar: {
         position: 'fixed', top: 0, left: 0, right: 0, height: TOPBAR_H,
@@ -183,6 +214,22 @@ const styles = {
         boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 16px', zIndex: 50,
+    },
+    topBarRight: {
+        display: 'flex', alignItems: 'center', gap: '4px',
+    },
+    bellBtn: {
+        background: 'none', border: 'none', cursor: 'pointer',
+        color: '#374151', display: 'flex', alignItems: 'center', padding: '4px',
+        position: 'relative',
+    },
+    topBarBadge: {
+        position: 'absolute', top: -1, right: -1,
+        backgroundColor: '#ef4444', color: '#fff',
+        fontSize: '0.6rem', fontWeight: 700,
+        borderRadius: '10px', padding: '1px 4px',
+        minWidth: '14px', textAlign: 'center',
+        fontFamily: 'Outfit, sans-serif', lineHeight: '14px',
     },
     burgerBtn: {
         background: 'none', border: 'none', cursor: 'pointer',
