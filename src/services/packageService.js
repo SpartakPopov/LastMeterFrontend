@@ -40,6 +40,12 @@ export async function updatePackage(id, data) {
     return response.json();
 }
 
+export async function fetchAllLockers() {
+    const response = await fetch(`${BASE_URL}/lockers/all`);
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    return response.json();
+}
+
 export async function fetchPackageByTrackingNumber(trackingNumber) {
     const response = await fetch(`${BASE_URL}/packages/${encodeURIComponent(trackingNumber)}`);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchAllPackages, updatePackage } from '../services/packageService';
+import { fetchAllPackages, updatePackage, fetchAllLockers } from '../services/packageService';
 import { useToast, ToastContainer } from '../components/Toast';
 
 const STATUSES = ['ALL', 'PENDING', 'ASSIGNED_TO_LOCKER', 'DELIVERED_TO_LOCKER', 'PICKED_UP'];
@@ -148,17 +148,30 @@ export default function PackagesDashboardPage({ onViewDetails }) {
     );
 }
 
+const STATUSES_EDIT = ['PENDING', 'ASSIGNED_TO_LOCKER', 'DELIVERED_TO_LOCKER', 'PICKED_UP'];
+const LOCKER_STATUSES = ['ASSIGNED_TO_LOCKER', 'DELIVERED_TO_LOCKER'];
+
 function EditModal({ pkg, onSave, onClose }) {
     const [trackingNumber, setTrackingNumber] = useState(pkg.trackingNumber || '');
     const [description, setDescription] = useState(pkg.description || '');
     const [length, setLength] = useState(pkg.length ?? '');
     const [width, setWidth] = useState(pkg.width ?? '');
     const [height, setHeight] = useState(pkg.height ?? '');
+    const [status, setStatus] = useState(pkg.status || 'PENDING');
+    const [lockerId, setLockerId] = useState(pkg.lockerId ?? '');
+    const [lockers, setLockers] = useState([]);
     const [saving, setSaving] = useState(false);
+
+    const needsLocker = LOCKER_STATUSES.includes(status);
+
+    useEffect(() => {
+        fetchAllLockers().then(setLockers).catch(() => {});
+    }, []);
 
     async function handleSubmit(e) {
         e.preventDefault();
         if (!trackingNumber.trim()) return;
+        if (needsLocker && !lockerId) return;
         setSaving(true);
         await onSave({
             trackingNumber: trackingNumber.trim(),
@@ -166,6 +179,8 @@ function EditModal({ pkg, onSave, onClose }) {
             length: length !== '' ? Number(length) : null,
             width: width !== '' ? Number(width) : null,
             height: height !== '' ? Number(height) : null,
+            status,
+            lockerId: needsLocker && lockerId !== '' ? Number(lockerId) : null,
         });
         setSaving(false);
     }
@@ -207,6 +222,31 @@ function EditModal({ pkg, onSave, onClose }) {
                             <input type="number" value={height} onChange={e => setHeight(e.target.value)} placeholder="Height" style={styles.dimInput} min="0" step="0.01" />
                         </div>
                     </div>
+
+                    <div style={styles.divider} />
+
+                    <label style={styles.field}>
+                        <span style={styles.fieldLabel}>Status</span>
+                        <select value={status} onChange={e => { setStatus(e.target.value); setLockerId(''); }} style={styles.select}>
+                            {STATUSES_EDIT.map(s => (
+                                <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+                            ))}
+                        </select>
+                    </label>
+
+                    {needsLocker && (
+                        <label style={styles.field}>
+                            <span style={styles.fieldLabel}>Assign to Locker *</span>
+                            <select value={lockerId} onChange={e => setLockerId(e.target.value)} style={styles.select} required>
+                                <option value="">— Select a locker —</option>
+                                {lockers.map(l => (
+                                    <option key={l.id} value={l.id}>
+                                        {l.lockerNumber} · {l.size} · {l.buildingName} ({l.status})
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
 
                     <div style={styles.modalActions}>
                         <button type="button" style={styles.cancelBtn} onClick={onClose}>Cancel</button>
@@ -361,6 +401,13 @@ const styles = {
         padding: '10px', borderRadius: '10px', border: '1.5px solid #e5e7eb',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', color: '#111827',
         outline: 'none', width: '100%', boxSizing: 'border-box',
+    },
+    divider: { borderTop: '1px solid #f3f4f6', margin: '4px 0' },
+    select: {
+        width: '100%', padding: '10px 14px', borderRadius: '10px', boxSizing: 'border-box',
+        border: '1.5px solid #e5e7eb', fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.92rem', color: '#111827', outline: 'none', backgroundColor: '#fff',
+        cursor: 'pointer',
     },
     modalActions: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '4px' },
     cancelBtn: {
