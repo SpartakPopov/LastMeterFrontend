@@ -66,7 +66,7 @@ export default function App() {
             case 'createOrderRequest':
                 return <CreateOrderRequestPage />;
             case 'dashboard':
-                return <PackagesDashboardPage />;
+                return <PackagesDashboardPage onViewDetails={handleSearch} />;
             case 'myOrders':
                 return <MyOrdersPage />;
             default:

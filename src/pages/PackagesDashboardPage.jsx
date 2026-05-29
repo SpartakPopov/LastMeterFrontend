@@ -11,7 +11,7 @@ const STATUS_STYLE = {
     PICKED_UP:           { bg: '#f3e8ff', color: '#7e22ce' },
 };
 
-export default function PackagesDashboardPage() {
+export default function PackagesDashboardPage({ onViewDetails }) {
     const [packages, setPackages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -85,7 +85,7 @@ export default function PackagesDashboardPage() {
                             <table style={styles.table}>
                                 <thead>
                                     <tr>
-                                        {['Tracking Number', 'Description', 'Dimensions', 'Receiver', 'Status', ''].map(h => (
+                                        {['Tracking Number', 'Description', 'Dimensions', 'Receiver', 'Status', 'Actions'].map(h => (
                                             <th key={h} style={styles.th}>{h}</th>
                                         ))}
                                     </tr>
@@ -114,9 +114,16 @@ export default function PackagesDashboardPage() {
                                                     </span>
                                                 </td>
                                                 <td style={styles.tdAction}>
-                                                    <button style={styles.editBtn} onClick={() => setEditPkg(pkg)}>
-                                                        <PencilIcon /> Edit
-                                                    </button>
+                                                    <div style={styles.actionGroup}>
+                                                        {onViewDetails && (
+                                                            <button style={styles.detailsBtn} onClick={() => onViewDetails(pkg.trackingNumber)}>
+                                                                <EyeIcon /> Details
+                                                            </button>
+                                                        )}
+                                                        <button style={styles.editBtn} onClick={() => setEditPkg(pkg)}>
+                                                            <PencilIcon /> Edit
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -222,6 +229,15 @@ function GridIcon() {
     );
 }
 
+function EyeIcon() {
+    return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+        </svg>
+    );
+}
+
 function PencilIcon() {
     return (
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -289,6 +305,15 @@ const styles = {
     badge: {
         fontSize: '0.75rem', fontWeight: 700, borderRadius: '6px',
         padding: '3px 9px', letterSpacing: '0.03em', whiteSpace: 'nowrap',
+    },
+    actionGroup: { display: 'flex', alignItems: 'center', gap: '6px' },
+    detailsBtn: {
+        display: 'inline-flex', alignItems: 'center', gap: '5px',
+        padding: '6px 12px', borderRadius: '8px',
+        border: '1.5px solid #bfdbfe', backgroundColor: '#eff6ff',
+        color: '#1d4ed8', fontFamily: 'Outfit, sans-serif',
+        fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+        whiteSpace: 'nowrap',
     },
     editBtn: {
         display: 'inline-flex', alignItems: 'center', gap: '5px',
