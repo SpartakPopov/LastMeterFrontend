@@ -160,12 +160,15 @@ function EditModal({ pkg, onSave, onClose }) {
     const [status, setStatus] = useState(pkg.status || 'PENDING');
     const [lockerId, setLockerId] = useState(pkg.lockerId ?? '');
     const [lockers, setLockers] = useState([]);
+    const [lockerError, setLockerError] = useState(null);
     const [saving, setSaving] = useState(false);
 
     const needsLocker = LOCKER_STATUSES.includes(status);
 
     useEffect(() => {
-        fetchAllLockers().then(setLockers).catch(() => {});
+        fetchAllLockers()
+            .then(setLockers)
+            .catch(e => setLockerError(e.message || 'Failed to load lockers'));
     }, []);
 
     async function handleSubmit(e) {
@@ -237,14 +240,18 @@ function EditModal({ pkg, onSave, onClose }) {
                     {needsLocker && (
                         <label style={styles.field}>
                             <span style={styles.fieldLabel}>Assign to Locker *</span>
-                            <select value={lockerId} onChange={e => setLockerId(e.target.value)} style={styles.select} required>
-                                <option value="">— Select a locker —</option>
-                                {lockers.map(l => (
-                                    <option key={l.id} value={l.id}>
-                                        {l.lockerNumber} · {l.size} · {l.buildingName} ({l.status})
-                                    </option>
-                                ))}
-                            </select>
+                            {lockerError ? (
+                                <p style={styles.lockerErr}>Could not load lockers: {lockerError}</p>
+                            ) : (
+                                <select value={lockerId} onChange={e => setLockerId(e.target.value)} style={styles.select} required>
+                                    <option value="">— Select a locker —</option>
+                                    {lockers.map(l => (
+                                        <option key={l.id} value={l.id}>
+                                            {l.lockerNumber} · {l.size} · {l.buildingName} ({l.status})
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </label>
                     )}
 
@@ -403,6 +410,7 @@ const styles = {
         outline: 'none', width: '100%', boxSizing: 'border-box',
     },
     divider: { borderTop: '1px solid #f3f4f6', margin: '4px 0' },
+    lockerErr: { fontSize: '0.83rem', color: '#b91c1c', margin: '4px 0 0', fontFamily: 'Outfit, sans-serif' },
     select: {
         width: '100%', padding: '10px 14px', borderRadius: '10px', boxSizing: 'border-box',
         border: '1.5px solid #e5e7eb', fontFamily: 'Outfit, sans-serif',
