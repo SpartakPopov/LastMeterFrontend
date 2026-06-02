@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './styles/global.css';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar, { SIDEBAR_W, TOPBAR_H } from './components/Navbar';
+import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import TrackingResultPage from './pages/TrackingResultPage';
 import CreatePackagePage from './pages/CreatePackagePage';
@@ -13,10 +15,25 @@ import NotificationsPage from './pages/NotificationsPage';
 import { fetchPackageByTrackingNumber } from './services/packageService';
 import { fetchUnreadNotifications } from './services/notificationService';
 
-// TODO: Replace with the logged-in user's ID once email authentication is implemented
-const CURRENT_USER_ID = 1;
-
 export default function App() {
+    return (
+        <AuthProvider>
+            <AppShell />
+        </AuthProvider>
+    );
+}
+
+function AppShell() {
+    const { currentUser } = useAuth();
+
+    if (!currentUser) return <LoginPage />;
+    return <AuthenticatedApp />;
+}
+
+const ADMIN_PAGES = new Set(['create', 'orderRequests', 'dashboard']);
+
+function AuthenticatedApp() {
+    const { currentUser } = useAuth();
     const [page, setPage] = useState('home');
     const [trackingNumber, setTrackingNumber] = useState('');
     const [packageData, setPackageData] = useState(null);
@@ -33,12 +50,12 @@ export default function App() {
 
     const refreshUnreadCount = useCallback(async () => {
         try {
-            const data = await fetchUnreadNotifications(CURRENT_USER_ID);
+            const data = await fetchUnreadNotifications(currentUser.id);
             setUnreadCount(data.length);
         } catch {
-            // Silently ignore — badge will stay at its last known value
+            // Silently ignore — badge stays at last known value
         }
-    }, []);
+    }, [currentUser.id]);
 
     useEffect(() => {
         refreshUnreadCount();
@@ -63,6 +80,7 @@ export default function App() {
     }, []);
 
     function navigate(key) {
+        if (ADMIN_PAGES.has(key) && currentUser.role !== 'ADMIN') return;
         setPage(key);
         setPackageData(null);
         setError(null);
@@ -75,6 +93,9 @@ export default function App() {
     };
 
     function renderPage() {
+        if (ADMIN_PAGES.has(page) && currentUser.role !== 'ADMIN') {
+            return <HomePage onSearch={handleSearch} loading={loading} />;
+        }
         switch (page) {
             case 'result':
                 return <TrackingResultPage trackingNumber={trackingNumber} packageData={packageData} loading={loading} error={error} onSearch={handleSearch} />;
@@ -93,7 +114,7 @@ export default function App() {
             case 'notifications':
                 return (
                     <NotificationsPage
-                        userId={CURRENT_USER_ID}
+                        userId={currentUser.id}
                         onViewPackage={handleSearch}
                         onUnreadCountChange={refreshUnreadCount}
                     />

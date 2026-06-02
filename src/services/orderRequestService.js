@@ -55,17 +55,26 @@ export async function getAllOrderGroups() {
     return response.json();
 }
 
-export async function createOrderGroup(name, requestedById, orderRequestIds) {
+export async function createOrderGroup(name, orderRequestIds) {
     const response = await fetch(`${BASE_URL}/order-groups`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, requestedById, orderRequestIds }),
+        body: JSON.stringify({ name, orderRequestIds }),
     });
     if (!response.ok) {
         const msg = await response.text().catch(() => '');
         throw new Error(msg || `Server error: ${response.status}`);
     }
     return response.json();
+}
+
+export async function fulfillOrderGroup(id, packages) {
+    const response = await fetch(`${BASE_URL}/order-groups/${id}/fulfill`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packages }),
+    });
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
 }
 
 export async function deleteOrderGroup(id) {

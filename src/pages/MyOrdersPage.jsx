@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { shortenUrl } from '../utils/shortenUrl';
 import UserSearchDropdown from '../components/UserSearchDropdown';
 import { getAllOrderRequests } from '../services/orderRequestService';
 
@@ -123,8 +124,8 @@ function OrderCard({ order }) {
                         <span style={styles.fieldLabel}>Links</span>
                         <div style={styles.links}>
                             {order.productLinks.split('\n').filter(l => l.trim()).map((link, i) => (
-                                <a key={i} href={link.trim()} target="_blank" rel="noreferrer" style={styles.link}>
-                                    {link.trim()}
+                                <a key={i} href={link.trim()} target="_blank" rel="noreferrer" style={styles.link} title={link.trim()}>
+                                    {shortenUrl(link.trim())}
                                 </a>
                             ))}
                         </div>
@@ -235,7 +236,7 @@ const styles = {
     linksBlock: { display: 'flex', flexDirection: 'column', gap: '4px' },
     fieldLabel: { fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af', fontFamily: 'Outfit, sans-serif' },
     links: { display: 'flex', flexDirection: 'column', gap: '4px' },
-    link: { color: '#2563eb', fontSize: '0.85rem', fontFamily: 'Outfit, sans-serif', wordBreak: 'break-all', textDecoration: 'underline' },
+    link: { color: '#2563eb', fontSize: '0.85rem', fontFamily: 'Outfit, sans-serif', textDecoration: 'underline' },
     metaRow: { display: 'flex', gap: '20px', flexWrap: 'wrap' },
     metaItem: { fontSize: '0.85rem', color: '#6b7280', fontFamily: 'Outfit, sans-serif' },
     metaKey: { fontWeight: 600, color: '#374151' },

@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export const SIDEBAR_W = 240;
 export const TOPBAR_H = 56;
 
 const NAV_ITEMS = [
-    { key: 'home',               label: 'Track Package',       icon: SearchIcon },
-    { key: 'create',             label: 'Create Package',      icon: BoxIcon },
-    { key: 'createOrderRequest', label: 'New Order Request',   icon: ShoppingIcon },
-    { key: 'myOrders',           label: 'My Orders',           icon: ListIcon },
-    { key: 'unclaimed',          label: 'Unclaimed Packages',  icon: InboxIcon },
-    { key: 'orderRequests',      label: 'Order Requests',      icon: ClipboardIcon },
-    { key: 'dashboard',          label: 'Packages Dashboard',  icon: GridIcon },
-    { key: 'notifications',      label: 'Notifications',       icon: BellNavIcon },
+    { key: 'home',               label: 'Track Package',       icon: SearchIcon,    roles: ['ADMIN', 'EMPLOYEE'] },
+    { key: 'createOrderRequest', label: 'New Order Request',   icon: ShoppingIcon,  roles: ['ADMIN', 'EMPLOYEE'] },
+    { key: 'myOrders',           label: 'My Orders',           icon: ListIcon,      roles: ['ADMIN', 'EMPLOYEE'] },
+    { key: 'unclaimed',          label: 'Unclaimed Packages',  icon: InboxIcon,     roles: ['ADMIN', 'EMPLOYEE'] },
+    { key: 'notifications',      label: 'Notifications',       icon: BellNavIcon,   roles: ['ADMIN', 'EMPLOYEE'] },
+    { key: 'create',             label: 'Create Package',      icon: BoxIcon,       roles: ['ADMIN'] },
+    { key: 'orderRequests',      label: 'Order Requests',      icon: ClipboardIcon, roles: ['ADMIN'] },
+    { key: 'dashboard',          label: 'Packages Dashboard',  icon: GridIcon,      roles: ['ADMIN'] },
 ];
 
 export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
+    const { currentUser, logout } = useAuth();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [open, setOpen] = useState(false);
 
@@ -34,6 +36,9 @@ export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
     }
 
     const activeKey = currentPage === 'result' ? 'home' : currentPage;
+
+    const userRole = currentUser?.role ?? 'EMPLOYEE';
+    const visibleItems = NAV_ITEMS.filter(item => item.roles.includes(userRole));
 
     if (isMobile) {
         return (
@@ -65,7 +70,8 @@ export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
                     <div style={styles.drawerLogo}>
                         <span style={styles.logoText}>LastMeter</span>
                     </div>
-                    <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} />
+                    <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} items={visibleItems} />
+                    <UserFooter user={currentUser} onLogout={logout} />
                 </div>
             </>
         );
@@ -77,15 +83,34 @@ export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
                 <div style={styles.logoMark}>LM</div>
                 <span style={styles.logoText}>LastMeter</span>
             </div>
-            <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} />
+            <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} items={visibleItems} />
+            <UserFooter user={currentUser} onLogout={logout} />
         </div>
     );
 }
 
-function NavList({ activeKey, navigate, unreadCount }) {
+function UserFooter({ user, onLogout }) {
+    if (!user) return null;
+    const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase();
+    const roleBadge = user.role === 'ADMIN' ? 'Admin' : 'Employee';
+    return (
+        <div style={styles.userFooter}>
+            <div style={styles.userAvatar}>{initials}</div>
+            <div style={styles.userInfo}>
+                <span style={styles.userName}>{user.firstName} {user.lastName}</span>
+                <span style={styles.userRole}>{roleBadge}</span>
+            </div>
+            <button style={styles.logoutBtn} onClick={onLogout} title="Sign out">
+                <LogoutIcon />
+            </button>
+        </div>
+    );
+}
+
+function NavList({ activeKey, navigate, unreadCount, items }) {
     return (
         <nav style={styles.nav}>
-            {NAV_ITEMS.map(({ key, label, icon: Icon }) => {
+            {items.map(({ key, label, icon: Icon }) => {
                 const active = activeKey === key;
                 const badge = key === 'notifications' && unreadCount > 0
                     ? (unreadCount > 99 ? '99+' : unreadCount)
@@ -139,6 +164,9 @@ function XIcon() {
 }
 function BellNavIcon() {
     return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
+}
+function LogoutIcon() {
+    return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
 }
 
 const styles = {
@@ -234,6 +262,38 @@ const styles = {
     burgerBtn: {
         background: 'none', border: 'none', cursor: 'pointer',
         color: '#374151', display: 'flex', alignItems: 'center', padding: '4px',
+    },
+
+    /* ── User footer ── */
+    userFooter: {
+        display: 'flex', alignItems: 'center', gap: '10px',
+        padding: '12px 14px',
+        borderTop: '1px solid #f3f4f6',
+        marginTop: 'auto',
+    },
+    userAvatar: {
+        width: 32, height: 32, borderRadius: '50%',
+        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontWeight: 700, fontSize: '0.72rem',
+        fontFamily: 'Outfit, sans-serif', flexShrink: 0,
+    },
+    userInfo: {
+        display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0,
+    },
+    userName: {
+        fontSize: '0.82rem', fontWeight: 600, color: '#111827',
+        fontFamily: 'Outfit, sans-serif',
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+    },
+    userRole: {
+        fontSize: '0.72rem', color: '#9ca3af',
+        fontFamily: 'Outfit, sans-serif',
+    },
+    logoutBtn: {
+        background: 'none', border: 'none', cursor: 'pointer',
+        color: '#9ca3af', display: 'flex', alignItems: 'center',
+        padding: '4px', borderRadius: '6px', flexShrink: 0,
     },
 
     /* ── Mobile drawer ── */
