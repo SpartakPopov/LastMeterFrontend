@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import siouxLogo from '../assets/Sioux-logo.svg';
 
 export const SIDEBAR_W = 240;
 export const TOPBAR_H = 56;
 
-const NAV_ITEMS = [
-    { key: 'home',               label: 'Track Package',       icon: SearchIcon,    roles: ['ADMIN', 'EMPLOYEE'] },
-    { key: 'createOrderRequest', label: 'New Order Request',   icon: ShoppingIcon,  roles: ['ADMIN', 'EMPLOYEE'] },
-    { key: 'myOrders',           label: 'My Orders',           icon: ListIcon,      roles: ['ADMIN', 'EMPLOYEE'] },
-    { key: 'unclaimed',          label: 'Unclaimed Packages',  icon: InboxIcon,     roles: ['ADMIN', 'EMPLOYEE'] },
-    { key: 'notifications',      label: 'Notifications',       icon: BellNavIcon,   roles: ['ADMIN', 'EMPLOYEE'] },
-    { key: 'create',             label: 'Create Package',      icon: BoxIcon,       roles: ['ADMIN'] },
-    { key: 'orderRequests',      label: 'Order Requests',      icon: ClipboardIcon, roles: ['ADMIN'] },
-    { key: 'dashboard',          label: 'Packages Dashboard',  icon: GridIcon,      roles: ['ADMIN'] },
+const NAV_SECTIONS = [
+    {
+        label: 'Packages',
+        items: [
+            { key: 'home',      label: 'Track Package',      icon: SearchIcon, roles: ['ADMIN', 'EMPLOYEE'] },
+            { key: 'dashboard', label: 'Dashboard',           icon: GridIcon,   roles: ['ADMIN'] },
+            { key: 'unclaimed', label: 'Unclaimed Packages',  icon: InboxIcon,  roles: ['ADMIN', 'EMPLOYEE'] },
+            { key: 'create',    label: 'Create Package',      icon: BoxIcon,    roles: ['ADMIN'] },
+        ],
+    },
+    {
+        label: 'Orders',
+        items: [
+            { key: 'createOrderRequest', label: 'New Order Request', icon: ShoppingIcon,  roles: ['ADMIN', 'EMPLOYEE'] },
+            { key: 'myOrders',           label: 'My Orders',         icon: ListIcon,      roles: ['ADMIN', 'EMPLOYEE'] },
+            { key: 'orderRequests',      label: 'Order Requests',    icon: ClipboardIcon, roles: ['ADMIN'] },
+        ],
+    },
 ];
 
 export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
@@ -38,16 +48,21 @@ export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
     const activeKey = currentPage === 'result' ? 'home' : currentPage;
 
     const userRole = currentUser?.role ?? 'EMPLOYEE';
-    const visibleItems = NAV_ITEMS.filter(item => item.roles.includes(userRole));
+    const visibleSections = NAV_SECTIONS
+        .map(section => ({ ...section, items: section.items.filter(item => item.roles.includes(userRole)) }))
+        .filter(section => section.items.length > 0);
 
     if (isMobile) {
         return (
             <>
                 <div style={styles.topBar}>
-                    <span style={styles.logoText}>LastMeter</span>
+                    <div style={styles.brand}>
+                        <img src={siouxLogo} alt="Sioux" style={styles.brandLogo} />
+                        <span style={styles.logoText}>LastMeter</span>
+                    </div>
                     <div style={styles.topBarRight}>
                         <button
-                            style={styles.bellBtn}
+                            style={{ ...styles.bellBtn, ...(activeKey === 'notifications' ? styles.bellBtnActive : {}) }}
                             onClick={() => navigate('notifications')}
                             aria-label="Notifications"
                         >
@@ -68,9 +83,10 @@ export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
 
                 <div style={{ ...styles.drawer, transform: open ? 'translateX(0)' : 'translateX(-100%)' }}>
                     <div style={styles.drawerLogo}>
+                        <img src={siouxLogo} alt="Sioux" style={styles.brandLogo} />
                         <span style={styles.logoText}>LastMeter</span>
                     </div>
-                    <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} items={visibleItems} />
+                    <NavList activeKey={activeKey} navigate={navigate} sections={visibleSections} />
                     <UserFooter user={currentUser} onLogout={logout} />
                 </div>
             </>
@@ -80,10 +96,23 @@ export default function Navbar({ currentPage, onNavigate, unreadCount = 0 }) {
     return (
         <div style={styles.sidebar}>
             <div style={styles.sidebarLogo}>
-                <div style={styles.logoMark}>LM</div>
+                <img src={siouxLogo} alt="Sioux" style={styles.brandLogo} />
                 <span style={styles.logoText}>LastMeter</span>
+                <button
+                    style={{ ...styles.bellBtn, ...styles.bellBtnSidebar, ...(activeKey === 'notifications' ? styles.bellBtnActive : {}) }}
+                    onClick={() => navigate('notifications')}
+                    aria-label="Notifications"
+                    title="Notifications"
+                >
+                    <BellNavIcon />
+                    {unreadCount > 0 && (
+                        <span style={styles.topBarBadge}>
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                    )}
+                </button>
             </div>
-            <NavList activeKey={activeKey} navigate={navigate} unreadCount={unreadCount} items={visibleItems} />
+            <NavList activeKey={activeKey} navigate={navigate} sections={visibleSections} />
             <UserFooter user={currentUser} onLogout={logout} />
         </div>
     );
@@ -107,29 +136,30 @@ function UserFooter({ user, onLogout }) {
     );
 }
 
-function NavList({ activeKey, navigate, unreadCount, items }) {
+function NavList({ activeKey, navigate, sections }) {
     return (
         <nav style={styles.nav}>
-            {items.map(({ key, label, icon: Icon }) => {
-                const active = activeKey === key;
-                const badge = key === 'notifications' && unreadCount > 0
-                    ? (unreadCount > 99 ? '99+' : unreadCount)
-                    : null;
-                return (
-                    <button
-                        key={key}
-                        style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
-                        onClick={() => navigate(key)}
-                    >
-                        <span style={{ ...styles.navIcon, ...(active ? styles.navIconActive : {}) }}>
-                            <Icon />
-                        </span>
-                        <span style={active ? styles.navLabelActive : styles.navLabel}>{label}</span>
-                        {badge && <span style={styles.navBadge}>{badge}</span>}
-                        {active && <div style={styles.activeBar} />}
-                    </button>
-                );
-            })}
+            {sections.map(section => (
+                <div key={section.label} style={styles.navSection}>
+                    <span style={styles.sectionLabel}>{section.label}</span>
+                    {section.items.map(({ key, label, icon: Icon }) => {
+                        const active = activeKey === key;
+                        return (
+                            <button
+                                key={key}
+                                style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
+                                onClick={() => navigate(key)}
+                            >
+                                <span style={{ ...styles.navIcon, ...(active ? styles.navIconActive : {}) }}>
+                                    <Icon />
+                                </span>
+                                <span style={active ? styles.navLabelActive : styles.navLabel}>{label}</span>
+                                {active && <div style={styles.activeBar} />}
+                            </button>
+                        );
+                    })}
+                </div>
+            ))}
         </nav>
     );
 }
@@ -182,24 +212,33 @@ const styles = {
     },
     sidebarLogo: {
         display: 'flex', alignItems: 'center', gap: '10px',
-        padding: '20px 18px 16px',
+        padding: '18px 14px',
         borderBottom: '1px solid #f3f4f6',
     },
-    logoMark: {
-        width: 32, height: 32, borderRadius: '9px',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '0.05em',
-        fontFamily: 'Outfit, sans-serif', flexShrink: 0,
+    brand: {
+        display: 'flex', alignItems: 'center', gap: '8px',
+    },
+    brandLogo: {
+        height: 26, width: 'auto', flexShrink: 0,
     },
     logoText: {
-        fontWeight: 700, fontSize: '1rem', color: '#15803d', letterSpacing: '-0.01em',
+        fontWeight: 700, fontSize: '1rem', color: '#c2410c', letterSpacing: '-0.01em',
         fontFamily: 'Outfit, sans-serif',
     },
     nav: {
-        padding: '10px 10px',
-        display: 'flex', flexDirection: 'column', gap: '2px',
+        padding: '12px 10px',
+        display: 'flex', flexDirection: 'column', gap: '4px',
         flex: 1, overflowY: 'auto',
+    },
+    navSection: {
+        display: 'flex', flexDirection: 'column', gap: '2px',
+        marginBottom: '8px',
+    },
+    sectionLabel: {
+        fontSize: '0.68rem', fontWeight: 700, color: '#9ca3af',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        fontFamily: 'Outfit, sans-serif',
+        padding: '6px 10px 4px',
     },
     navItem: {
         display: 'flex', alignItems: 'center', gap: '10px',
@@ -209,30 +248,21 @@ const styles = {
         transition: 'background-color 0.12s',
     },
     navItemActive: {
-        backgroundColor: '#f0fdf4',
+        backgroundColor: '#fff7ed',
     },
     navIcon: { color: '#9ca3af', display: 'flex', alignItems: 'center', flexShrink: 0 },
-    navIconActive: { color: '#16a34a' },
+    navIconActive: { color: '#ea580c' },
     navLabel: {
         fontSize: '0.88rem', fontWeight: 500, color: '#6b7280',
         fontFamily: 'Outfit, sans-serif',
     },
     navLabelActive: {
-        fontSize: '0.88rem', fontWeight: 700, color: '#15803d',
+        fontSize: '0.88rem', fontWeight: 700, color: '#c2410c',
         fontFamily: 'Outfit, sans-serif',
     },
     activeBar: {
         position: 'absolute', right: 0, top: '20%', bottom: '20%',
-        width: 3, borderRadius: '2px', backgroundColor: '#16a34a',
-    },
-
-    navBadge: {
-        marginLeft: 'auto', marginRight: '10px',
-        backgroundColor: '#22c55e', color: '#fff',
-        fontSize: '0.68rem', fontWeight: 700,
-        borderRadius: '12px', padding: '1px 6px',
-        minWidth: '18px', textAlign: 'center',
-        fontFamily: 'Outfit, sans-serif', lineHeight: '16px',
+        width: 3, borderRadius: '2px', backgroundColor: '#ea580c',
     },
 
     /* ── Mobile top bar ── */
@@ -247,9 +277,15 @@ const styles = {
         display: 'flex', alignItems: 'center', gap: '4px',
     },
     bellBtn: {
-        background: 'none', border: 'none', cursor: 'pointer',
-        color: '#374151', display: 'flex', alignItems: 'center', padding: '4px',
+        background: 'none', border: 'none', cursor: 'pointer', borderRadius: '8px',
+        color: '#374151', display: 'flex', alignItems: 'center', padding: '6px',
         position: 'relative',
+    },
+    bellBtnSidebar: {
+        marginLeft: 'auto',
+    },
+    bellBtnActive: {
+        color: '#ea580c', backgroundColor: '#fff7ed',
     },
     topBarBadge: {
         position: 'absolute', top: -1, right: -1,
@@ -273,7 +309,7 @@ const styles = {
     },
     userAvatar: {
         width: 32, height: 32, borderRadius: '50%',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        background: 'linear-gradient(135deg, #fb923c, #ea580c)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#fff', fontWeight: 700, fontSize: '0.72rem',
         fontFamily: 'Outfit, sans-serif', flexShrink: 0,
@@ -309,7 +345,7 @@ const styles = {
     },
     drawerLogo: {
         padding: '16px 18px', borderBottom: '1px solid #f3f4f6',
-        display: 'flex', alignItems: 'center',
+        display: 'flex', alignItems: 'center', gap: '8px',
         height: TOPBAR_H, boxSizing: 'border-box',
     },
 };

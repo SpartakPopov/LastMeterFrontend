@@ -35,8 +35,8 @@ const styles = {
     },
     ring: {
         borderStyle: 'solid',
-        borderColor: '#dcfce7',
-        borderTopColor: '#22c55e',
+        borderColor: '#ffedd5',
+        borderTopColor: '#ea580c',
         borderRadius: '50%',
         animation: 'lm-spin 0.8s linear infinite',
     },

@@ -138,7 +138,7 @@ function NotificationCard({ notification, onClick }) {
 
 function BellIconLg() {
     return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
@@ -163,7 +163,7 @@ const styles = {
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
     titleIcon: {
         width: 44, height: 44, borderRadius: '12px',
-        background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+        background: 'linear-gradient(135deg, #ffedd5, #fed7aa)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
     h1: {
@@ -197,15 +197,15 @@ const styles = {
         transition: 'box-shadow 0.15s, transform 0.1s',
     },
     cardUnread: {
-        backgroundColor: '#f0fdf4',
-        boxShadow: '0 2px 12px rgba(34,197,94,0.1)',
+        backgroundColor: '#fff7ed',
+        boxShadow: '0 2px 12px rgba(234,88,12,0.1)',
     },
     cardHover: {
         boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
         transform: 'translateY(-1px)',
     },
     unreadBar: {
-        width: 4, backgroundColor: '#22c55e', flexShrink: 0, alignSelf: 'stretch',
+        width: 4, backgroundColor: '#ea580c', flexShrink: 0, alignSelf: 'stretch',
     },
     cardBody: {
         padding: '16px 20px', flex: 1,
@@ -244,12 +244,12 @@ const styles = {
     },
     newBadge: {
         fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em',
-        backgroundColor: '#dcfce7', color: '#15803d',
+        backgroundColor: '#ffedd5', color: '#c2410c',
         borderRadius: '6px', padding: '2px 8px',
         fontFamily: 'Outfit, sans-serif',
     },
     viewLink: {
-        fontSize: '0.82rem', color: '#16a34a',
+        fontSize: '0.82rem', color: '#ea580c',
         fontFamily: 'Outfit, sans-serif', fontWeight: 600,
     },
 };

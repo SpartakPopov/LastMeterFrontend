@@ -551,7 +551,7 @@ function AlertIcon() {
 
 function ClipboardIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
             <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
         </svg>
@@ -573,7 +573,7 @@ const styles = {
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
     titleIcon: {
         width: 44, height: 44, borderRadius: '12px',
-        background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+        background: 'linear-gradient(135deg, #ffedd5, #fed7aa)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
     h1: { fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '2px', lineHeight: 1.2 },
@@ -692,7 +692,7 @@ const styles = {
     },
     approveBtn: {
         padding: '8px 20px', borderRadius: '8px', border: 'none',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+        background: 'linear-gradient(135deg, #fb923c, #ea580c)', color: '#fff',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer',
     },
     rejectBtn: {
@@ -764,8 +764,8 @@ const styles = {
         backgroundColor: '#fff5f5', color: '#b91c1c', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'Outfit, sans-serif',
     },
     addTrackingBtn: {
-        padding: '8px 14px', borderRadius: '8px', border: '1.5px dashed #d1fae5',
-        backgroundColor: '#f0fdf4', color: '#15803d', fontFamily: 'Outfit, sans-serif',
+        padding: '8px 14px', borderRadius: '8px', border: '1.5px dashed #ffedd5',
+        backgroundColor: '#fff7ed', color: '#c2410c', fontFamily: 'Outfit, sans-serif',
         fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start',
     },
     modalError: {
@@ -781,7 +781,7 @@ const styles = {
     },
     approveBtnPrimary: {
         padding: '9px 24px', borderRadius: '10px', border: 'none',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+        background: 'linear-gradient(135deg, #fb923c, #ea580c)', color: '#fff',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
     },
     rejectBtnPrimary: {

@@ -269,7 +269,7 @@ function EditModal({ pkg, onSave, onClose }) {
 
 function GridIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
             <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
         </svg>
@@ -301,7 +301,7 @@ const styles = {
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
     titleIcon: {
         width: 44, height: 44, borderRadius: '12px',
-        background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+        background: 'linear-gradient(135deg, #ffedd5, #fed7aa)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
     h1: { fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '2px', lineHeight: 1.2 },
@@ -313,12 +313,12 @@ const styles = {
         backgroundColor: '#fff', color: '#374151', fontFamily: 'Outfit, sans-serif',
         fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
     },
-    filterBtnActive: { backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#15803d' },
+    filterBtnActive: { backgroundColor: '#fff7ed', borderColor: '#fdba74', color: '#c2410c' },
     filterCount: {
         fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#f3f4f6',
         color: '#6b7280', borderRadius: '20px', padding: '1px 7px',
     },
-    filterCountActive: { backgroundColor: '#bbf7d0', color: '#15803d' },
+    filterCountActive: { backgroundColor: '#fed7aa', color: '#c2410c' },
     hint: { color: '#9ca3af', fontFamily: 'Outfit, sans-serif' },
     emptyCard: {
         backgroundColor: '#fff', borderRadius: '16px', padding: '32px',
@@ -425,7 +425,7 @@ const styles = {
     },
     saveBtn: {
         padding: '9px 24px', borderRadius: '10px', border: 'none',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+        background: 'linear-gradient(135deg, #fb923c, #ea580c)', color: '#fff',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
     },
 };

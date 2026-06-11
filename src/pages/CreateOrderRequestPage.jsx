@@ -194,7 +194,7 @@ function ChevronLeftIcon() {
 
 function ShoppingIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
         </svg>
@@ -248,13 +248,13 @@ const styles = {
         fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 600,
         cursor: 'pointer', border: 'none',
     },
-    logoText: { fontWeight: 700, fontSize: '1rem', color: '#15803d', letterSpacing: '-0.01em' },
+    logoText: { fontWeight: 700, fontSize: '1rem', color: '#c2410c', letterSpacing: '-0.01em' },
     main: { flex: 1, display: 'flex', justifyContent: 'center', padding: '36px 28px 60px' },
     shell: { width: '100%', maxWidth: '960px', display: 'flex', flexDirection: 'column', gap: '28px' },
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
     titleIcon: {
         width: 44, height: 44, borderRadius: '12px',
-        background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+        background: 'linear-gradient(135deg, #ffedd5, #fed7aa)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
     h1: { fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '2px', lineHeight: 1.2 },
@@ -265,11 +265,11 @@ const styles = {
     card: { backgroundColor: '#fff', borderRadius: '18px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' },
     cardHeader: {
         display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 22px',
-        borderBottom: '1px solid #f0fdf4', backgroundColor: '#f0fdf4',
+        borderBottom: '1px solid #fff7ed', backgroundColor: '#fff7ed',
         borderRadius: '18px 18px 0 0',
     },
-    cardIcon: { display: 'flex', alignItems: 'center', color: '#16a34a' },
-    cardTitle: { fontSize: '0.85rem', fontWeight: 600, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' },
+    cardIcon: { display: 'flex', alignItems: 'center', color: '#ea580c' },
+    cardTitle: { fontSize: '0.85rem', fontWeight: 600, color: '#c2410c', textTransform: 'uppercase', letterSpacing: '0.05em' },
     cardBody: { padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px' },
     field: { display: 'flex', flexDirection: 'column', gap: '6px' },
     fieldLabel: { fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280' },
@@ -286,7 +286,7 @@ const styles = {
         resize: 'vertical', lineHeight: 1.6,
     },
     checkRow: { display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' },
-    checkbox: { width: 16, height: 16, accentColor: '#16a34a', cursor: 'pointer' },
+    checkbox: { width: 16, height: 16, accentColor: '#ea580c', cursor: 'pointer' },
     checkLabel: { fontSize: '0.9rem', color: '#374151', fontFamily: 'Outfit, sans-serif', fontWeight: 500 },
     actions: { display: 'flex', justifyContent: 'flex-end', gap: '12px' },
     cancelBtn: {
@@ -296,9 +296,9 @@ const styles = {
     },
     submitBtn: {
         padding: '10px 28px', borderRadius: '10px', border: 'none',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+        background: 'linear-gradient(135deg, #fb923c, #ea580c)', color: '#fff',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.92rem', fontWeight: 700,
-        cursor: 'pointer', boxShadow: '0 2px 8px rgba(34,197,94,0.35)', transition: 'opacity 0.15s',
+        cursor: 'pointer', boxShadow: '0 2px 8px rgba(234,88,12,0.35)', transition: 'opacity 0.15s',
     },
     errorCard: {
         display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#fff5f5',

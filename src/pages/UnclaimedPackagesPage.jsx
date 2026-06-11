@@ -108,7 +108,7 @@ function ChevronLeftIcon() {
 
 function InboxIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
             <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
         </svg>
@@ -137,13 +137,13 @@ const styles = {
         fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 600,
         cursor: 'pointer', border: 'none',
     },
-    logoText: { fontWeight: 700, fontSize: '1rem', color: '#15803d', letterSpacing: '-0.01em' },
+    logoText: { fontWeight: 700, fontSize: '1rem', color: '#c2410c', letterSpacing: '-0.01em' },
     main: { flex: 1, display: 'flex', justifyContent: 'center', padding: '36px 28px 60px' },
     shell: { width: '100%', maxWidth: '960px', display: 'flex', flexDirection: 'column', gap: '28px' },
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
     titleIcon: {
         width: 44, height: 44, borderRadius: '12px',
-        background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+        background: 'linear-gradient(135deg, #ffedd5, #fed7aa)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
     h1: { fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '2px', lineHeight: 1.2 },
@@ -175,7 +175,7 @@ const styles = {
     qrBtn: {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginTop: '4px', padding: '9px 0', borderRadius: '10px',
-        border: '1.5px solid #d1fae5', backgroundColor: '#f0fdf4', color: '#15803d',
+        border: '1.5px solid #ffedd5', backgroundColor: '#fff7ed', color: '#c2410c',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
     },
     overlay: {
@@ -193,7 +193,7 @@ const styles = {
     modalHint: { fontSize: '0.8rem', color: '#9ca3af', margin: 0, textAlign: 'center' },
     closeBtn: {
         marginTop: '4px', padding: '9px 28px', borderRadius: '10px', border: 'none',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+        background: 'linear-gradient(135deg, #fb923c, #ea580c)', color: '#fff',
         fontFamily: 'Outfit, sans-serif', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer',
     },
 };

@@ -156,7 +156,7 @@ function ChevronLeftIcon() {
 
 function ListIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
             <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
         </svg>
@@ -176,13 +176,13 @@ const styles = {
         fontFamily: 'Outfit, sans-serif', fontSize: '0.88rem', fontWeight: 600,
         cursor: 'pointer', border: 'none',
     },
-    logoText: { fontWeight: 700, fontSize: '1rem', color: '#15803d', letterSpacing: '-0.01em' },
+    logoText: { fontWeight: 700, fontSize: '1rem', color: '#c2410c', letterSpacing: '-0.01em' },
     main: { flex: 1, display: 'flex', justifyContent: 'center', padding: '36px 28px 60px' },
     shell: { width: '100%', maxWidth: '760px', display: 'flex', flexDirection: 'column', gap: '24px' },
     pageTitle: { display: 'flex', alignItems: 'center', gap: '14px' },
     titleIcon: {
         width: 44, height: 44, borderRadius: '12px',
-        background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+        background: 'linear-gradient(135deg, #ffedd5, #fed7aa)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
     h1: { fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '2px', lineHeight: 1.2 },
@@ -206,7 +206,7 @@ const styles = {
         color: '#6b7280', backgroundColor: 'transparent', transition: 'all 0.15s',
     },
     tabActive: {
-        backgroundColor: '#fff', color: '#15803d',
+        backgroundColor: '#fff', color: '#c2410c',
         boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
     },
     hint: { color: '#9ca3af', fontFamily: 'Outfit, sans-serif' },

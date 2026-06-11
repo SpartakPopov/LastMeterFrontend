@@ -211,7 +211,7 @@ function ChevronLeftIcon() {
 
 function BoxIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
             <path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" />
         </svg>
@@ -291,7 +291,7 @@ const styles = {
     logoText: {
         fontWeight: 700,
         fontSize: '1rem',
-        color: '#15803d',
+        color: '#c2410c',
         letterSpacing: '-0.01em',
     },
     main: {
@@ -316,7 +316,7 @@ const styles = {
         width: 44,
         height: 44,
         borderRadius: '12px',
-        background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+        background: 'linear-gradient(135deg, #ffedd5, #fed7aa)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -359,20 +359,20 @@ const styles = {
         alignItems: 'center',
         gap: '8px',
         padding: '14px 22px',
-        borderBottom: '1px solid #f0fdf4',
-        backgroundColor: '#f0fdf4',
-        color: '#16a34a',
+        borderBottom: '1px solid #fff7ed',
+        backgroundColor: '#fff7ed',
+        color: '#ea580c',
         borderRadius: '18px 18px 0 0',
     },
     cardIcon: {
         display: 'flex',
         alignItems: 'center',
-        color: '#16a34a',
+        color: '#ea580c',
     },
     cardTitle: {
         fontSize: '0.85rem',
         fontWeight: 600,
-        color: '#15803d',
+        color: '#c2410c',
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
     },
@@ -452,13 +452,13 @@ const styles = {
         padding: '10px 28px',
         borderRadius: '10px',
         border: 'none',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        background: 'linear-gradient(135deg, #fb923c, #ea580c)',
         color: '#ffffff',
         fontFamily: 'Outfit, sans-serif',
         fontSize: '0.92rem',
         fontWeight: 700,
         cursor: 'pointer',
-        boxShadow: '0 2px 8px rgba(34,197,94,0.35)',
+        boxShadow: '0 2px 8px rgba(234,88,12,0.35)',
         opacity: 1,
         transition: 'opacity 0.15s',
     },

@@ -130,26 +130,6 @@ const styles = {
         border: 'none',
         transition: 'background-color 0.15s',
     },
-    logo: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-    },
-    logoIcon: {
-        width: 30,
-        height: 30,
-        borderRadius: '8px',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    logoText: {
-        fontWeight: 700,
-        fontSize: '1rem',
-        color: '#15803d',
-        letterSpacing: '-0.01em',
-    },
     main: {
         flex: 1,
         padding: '24px 16px 40px',

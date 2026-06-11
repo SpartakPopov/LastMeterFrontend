@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import siouxLogo from '../assets/Sioux-logo.svg';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -37,7 +38,7 @@ export default function LoginPage() {
         <div style={styles.page}>
             <div style={styles.card}>
                 <div style={styles.logo}>
-                    <div style={styles.logoMark}>LM</div>
+                    <img src={siouxLogo} alt="Sioux" style={styles.logoImg} />
                     <span style={styles.logoText}>LastMeter</span>
                 </div>
 
@@ -85,14 +86,11 @@ const styles = {
         display: 'flex', alignItems: 'center', gap: '10px',
         marginBottom: '28px',
     },
-    logoMark: {
-        width: 36, height: 36, borderRadius: '10px',
-        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', fontWeight: 800, fontSize: '0.8rem', letterSpacing: '0.05em',
+    logoImg: {
+        height: 32, width: 'auto',
     },
     logoText: {
-        fontWeight: 700, fontSize: '1.1rem', color: '#15803d', letterSpacing: '-0.01em',
+        fontWeight: 700, fontSize: '1.1rem', color: '#c2410c', letterSpacing: '-0.01em',
     },
     heading: {
         margin: '0 0 4px', fontSize: '1.5rem', fontWeight: 700, color: '#111827',
@@ -117,7 +115,7 @@ const styles = {
     },
     btn: {
         padding: '12px',
-        backgroundColor: '#16a34a',
+        backgroundColor: '#ea580c',
         color: '#fff',
         border: 'none',
         borderRadius: '10px',
