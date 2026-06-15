@@ -187,7 +187,7 @@ describe('orderRequestService', () => {
     });
 
     describe('createOrderGroup', () => {
-        test('sends POST with name, requestedById and orderRequestIds', async () => {
+        test('sends POST with name and orderRequestIds', async () => {
             // Arrange
             const created = { id: 'grp-new', name: 'Batch B' };
             global.fetch = vi.fn().mockResolvedValue({
@@ -197,7 +197,7 @@ describe('orderRequestService', () => {
             });
 
             // Act
-            const result = await createOrderGroup('Batch B', 'user-1', ['req-3', 'req-4']);
+            const result = await createOrderGroup('Batch B', ['req-3', 'req-4']);
 
             // Assert
             expect(result).toEqual(created);
@@ -206,7 +206,7 @@ describe('orderRequestService', () => {
                 expect.objectContaining({
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: 'Batch B', requestedById: 'user-1', orderRequestIds: ['req-3', 'req-4'] }),
+                    body: JSON.stringify({ name: 'Batch B', orderRequestIds: ['req-3', 'req-4'] }),
                 })
             );
         });
@@ -218,7 +218,7 @@ describe('orderRequestService', () => {
                 text: vi.fn().mockResolvedValue('All requests must be from the same user'),
             });
 
-            await expect(createOrderGroup('Bad', 'u1', [])).rejects.toThrow(
+            await expect(createOrderGroup('Bad', [])).rejects.toThrow(
                 'All requests must be from the same user'
             );
         });
@@ -230,7 +230,7 @@ describe('orderRequestService', () => {
                 text: vi.fn().mockResolvedValue(''),
             });
 
-            await expect(createOrderGroup('Bad', 'u1', [])).rejects.toThrow('Server error: 422');
+            await expect(createOrderGroup('Bad', [])).rejects.toThrow('Server error: 422');
         });
     });
 

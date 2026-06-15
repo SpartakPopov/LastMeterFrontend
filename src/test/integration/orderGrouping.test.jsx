@@ -36,19 +36,19 @@ let mockRequests = [req1, req2, req3];
 let mockGroups = [];
 
 const server = setupServer(
-    http.get('http://localhost:8080/order-requests', () => HttpResponse.json(mockRequests)),
-    http.get('http://localhost:8080/order-groups',   () => HttpResponse.json(mockGroups)),
-    http.post('http://localhost:8080/order-groups', async ({ request }) => {
+    http.get('/order-requests', () => HttpResponse.json(mockRequests)),
+    http.get('/order-groups',   () => HttpResponse.json(mockGroups)),
+    http.post('/order-groups', async ({ request }) => {
         const body = await request.json();
         const newGroup = { id: 'g-new', name: body.name, orderRequests: [req1, req2] };
         mockGroups = [newGroup];
         return HttpResponse.json(newGroup, { status: 201 });
     }),
-    http.delete('http://localhost:8080/order-groups/:id', () => {
+    http.delete('/order-groups/:id', () => {
         mockGroups = [];
         return new HttpResponse(null, { status: 204 });
     }),
-    http.post('http://localhost:8080/order-groups/:id/fulfill', () => new HttpResponse(null, { status: 204 })),
+    http.post('/order-groups/:id/fulfill', () => new HttpResponse(null, { status: 204 })),
 );
 
 beforeAll(() => server.listen());
@@ -167,7 +167,7 @@ describe('Group creation', () => {
     test('sends correct request ids when creating a group', async () => {
         let capturedBody;
         server.use(
-            http.post('http://localhost:8080/order-groups', async ({ request }) => {
+            http.post('/order-groups', async ({ request }) => {
                 capturedBody = await request.json();
                 mockGroups = [{ id: 'g-new', name: capturedBody.name, orderRequests: [req1, req2] }];
                 return HttpResponse.json({ id: 'g-new', name: capturedBody.name, orderRequests: [req1, req2] });
@@ -194,7 +194,7 @@ describe('Group creation', () => {
     });
 
     test('keeps modal open when group creation fails', async () => {
-        server.use(http.post('http://localhost:8080/order-groups', () => new HttpResponse('Server error: 500', { status: 500 })));
+        server.use(http.post('/order-groups', () => new HttpResponse('Server error: 500', { status: 500 })));
 
         const user = userEvent.setup();
         render(<OrderRequestsPage />);
@@ -248,7 +248,7 @@ describe('Group display', () => {
     test('clicking Ungroup sends DELETE and reloads', async () => {
         let deleteCalled = false;
         server.use(
-            http.delete('http://localhost:8080/order-groups/:id', () => {
+            http.delete('/order-groups/:id', () => {
                 deleteCalled = true;
                 mockGroups = [];
                 return new HttpResponse(null, { status: 204 });

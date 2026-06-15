@@ -12,7 +12,7 @@ vi.mock('../../services/userService', () => ({
 }));
 
 const server = setupServer(
-    http.post('http://localhost:8080/order-requests', () =>
+    http.post('/order-requests', () =>
         HttpResponse.json({ id: 'req-new', status: 'PENDING' })
     ),
 );
@@ -103,7 +103,7 @@ describe('CreateOrderRequestPage', () => {
         const user = userEvent.setup();
         let capturedBody;
         server.use(
-            http.post('http://localhost:8080/order-requests', async ({ request }) => {
+            http.post('/order-requests', async ({ request }) => {
                 capturedBody = await request.json();
                 return HttpResponse.json({ id: 'req-new', status: 'PENDING' });
             })
@@ -141,7 +141,7 @@ describe('CreateOrderRequestPage', () => {
 
     test('shows error message when API call fails', async () => {
         server.use(
-            http.post('http://localhost:8080/order-requests', () =>
+            http.post('/order-requests', () =>
                 new HttpResponse('Bad Request', { status: 400 })
             )
         );
@@ -156,7 +156,7 @@ describe('CreateOrderRequestPage', () => {
 
     test('submit button shows loading text while submitting', async () => {
         server.use(
-            http.post('http://localhost:8080/order-requests', async () => {
+            http.post('/order-requests', async () => {
                 await new Promise(r => setTimeout(r, 100));
                 return HttpResponse.json({ id: 'req-new', status: 'PENDING' });
             })

@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import PackageInfo from '../components/PackageInfo';
 import LoadingSpinner from '../components/LoadingSpinner';
-import packageImage from '../assets/package.png';
 
-export default function TrackingResultPage({ trackingNumber, packageData, loading, error, onSearch }) {
+export default function TrackingResultPage({ trackingNumber, packageData, loading, error }) {
     const [showQr, setShowQr] = useState(false);
     const [qrUrl, setQrUrl] = useState('');
 

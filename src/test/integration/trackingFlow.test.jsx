@@ -21,13 +21,22 @@ const fakePackage = {
     pickedUpAt: null,
 };
 
+const EMPLOYEE = {
+    id: 2,
+    firstName: 'Jane',
+    lastName: 'Doe',
+    email: 'jane@example.com',
+    role: 'EMPLOYEE',
+};
+
 const server = setupServer(
     http.get('/packages/:trackingNumber', ({ params }) => {
         if (params.trackingNumber === 'MISSING-999') {
             return new HttpResponse(null, { status: 404 });
         }
         return HttpResponse.json({ ...fakePackage, trackingNumber: params.trackingNumber });
-    })
+    }),
+    http.get('/notifications/user/:id/unread', () => HttpResponse.json([]))
 );
 
 beforeAll(() => {
@@ -35,7 +44,13 @@ beforeAll(() => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
     server.listen();
 });
-afterEach(() => server.resetHandlers());
+beforeEach(() => {
+    localStorage.setItem('lastmeter_user', JSON.stringify(EMPLOYEE));
+});
+afterEach(() => {
+    server.resetHandlers();
+    localStorage.clear();
+});
 afterAll(() => server.close());
 
 describe('tracking flow', () => {
@@ -52,13 +67,13 @@ describe('tracking flow', () => {
         await waitFor(() => expect(screen.getByText('TRK-001')).toBeInTheDocument());
         expect(screen.getByText('In Transit')).toBeInTheDocument();
         expect(screen.getByText('Laptop charger')).toBeInTheDocument();
-        expect(screen.getByText('Jane Doe')).toBeInTheDocument();
+        expect(screen.getAllByText('Jane Doe')).not.toHaveLength(0);
     });
 
     test('loading spinner shows while waiting for result', async () => {
         server.use(
             http.get('/packages/:trackingNumber', async () => {
-                await new Promise(r => setTimeout(r, 100));
+                await new Promise(r => setTimeout(r, 500));
                 return HttpResponse.json(fakePackage);
             })
         );

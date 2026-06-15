@@ -1,0 +1,137 @@
+name: Frontend CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, test, build, and analyze
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Validate SonarQube configuration
+        if: github.event_name == 'push'
+        run: |
+          test -n "$SONAR_HOST_URL" || { echo "Missing repository variable SONAR_HOST_URL"; exit 1; }
+          test -n "$SONAR_PROJECT_KEY" || { echo "Missing repository variable SONAR_PROJECT_KEY"; exit 1; }
+          test -n "$SONAR_TOKEN" || { echo "Missing repository secret SONAR_TOKEN"; exit 1; }
+
+      - name: Run SonarQube analysis
+        if: github.event_name == 'push'
+        uses: SonarSource/sonarqube-scan-action@v8
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  image:
+    name: Build and publish image
+    if: github.event_name == 'push'
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/spartakpopov/lastmeterfrontend:latest
+            ghcr.io/spartakpopov/lastmeterfrontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy production
+    if: github.event_name == 'push'
+    needs: image
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    env:
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+      GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - name: Validate deployment configuration
+        run: |
+          test -n "$DEPLOY_HOST" || { echo "Missing repository variable DEPLOY_HOST"; exit 1; }
+          test -n "$DEPLOY_USER" || { echo "Missing repository variable DEPLOY_USER"; exit 1; }
+          test -n "$DEPLOY_PATH" || { echo "Missing repository variable DEPLOY_PATH"; exit 1; }
+          test -n "$GHCR_USERNAME" || { echo "Missing repository variable GHCR_USERNAME"; exit 1; }
+          test -n "$DEPLOY_SSH_KEY" || { echo "Missing repository secret DEPLOY_SSH_KEY"; exit 1; }
+          test -n "$GHCR_TOKEN" || { echo "Missing repository secret GHCR_TOKEN"; exit 1; }
+
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend container
+        run: |
+          printf '%s' "$GHCR_TOKEN" |
+            ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "docker login ghcr.io -u '$GHCR_USERNAME' --password-stdin"
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "test -f '$DEPLOY_PATH/docker-compose.yml' || { echo 'Deploy backend first to install docker-compose.yml'; exit 1; }"
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd '$DEPLOY_PATH' && docker compose pull frontend && docker compose up -d --no-deps frontend && docker image prune -f"

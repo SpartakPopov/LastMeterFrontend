@@ -45,7 +45,7 @@ const fakeOrders = [
 ];
 
 const server = setupServer(
-    http.get('http://localhost:8080/order-requests', () => HttpResponse.json(fakeOrders)),
+    http.get('/order-requests', () => HttpResponse.json(fakeOrders)),
 );
 
 beforeAll(() => server.listen());
@@ -111,7 +111,7 @@ describe('MyOrdersPage', () => {
 
     test('shows empty state when no orders match the active tab', async () => {
         server.use(
-            http.get('http://localhost:8080/order-requests', () => HttpResponse.json([]))
+            http.get('/order-requests', () => HttpResponse.json([]))
         );
         const user = userEvent.setup();
         render(<MyOrdersPage />);
@@ -124,7 +124,7 @@ describe('MyOrdersPage', () => {
 
     test('shows loading text while fetching', async () => {
         server.use(
-            http.get('http://localhost:8080/order-requests', async () => {
+            http.get('/order-requests', async () => {
                 await new Promise(r => setTimeout(r, 100));
                 return HttpResponse.json(fakeOrders);
             })
@@ -140,7 +140,7 @@ describe('MyOrdersPage', () => {
 
     test('shows error message when fetch fails', async () => {
         server.use(
-            http.get('http://localhost:8080/order-requests', () =>
+            http.get('/order-requests', () =>
                 new HttpResponse(null, { status: 500 })
             )
         );

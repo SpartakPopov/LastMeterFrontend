@@ -12,17 +12,17 @@ const ADMIN = { id: 1, firstName: 'Spartak', lastName: 'Popov', email: 'admin@ex
 const EMPLOYEE = { id: 2, firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com', role: 'EMPLOYEE' };
 
 const server = setupServer(
-    http.get('http://localhost:8080/users/login', ({ request }) => {
+    http.get('/users/login', ({ request }) => {
         const email = new URL(request.url).searchParams.get('email');
         if (email === 'admin@example.com') return HttpResponse.json(ADMIN);
         if (email === 'jane@example.com') return HttpResponse.json(EMPLOYEE);
         return new HttpResponse(null, { status: 404 });
     }),
     // stub everything App tries to fetch after login
-    http.get('http://localhost:8080/packages/all', () => HttpResponse.json([])),
-    http.get('http://localhost:8080/order-requests', () => HttpResponse.json([])),
-    http.get('http://localhost:8080/order-groups', () => HttpResponse.json([])),
-    http.get('http://localhost:8080/notifications/unread/:id', () => HttpResponse.json([])),
+    http.get('/packages/all', () => HttpResponse.json([])),
+    http.get('/order-requests', () => HttpResponse.json([])),
+    http.get('/order-groups', () => HttpResponse.json([])),
+    http.get('/notifications/user/:id/unread', () => HttpResponse.json([])),
 );
 
 beforeAll(() => server.listen());
@@ -62,7 +62,7 @@ describe('LoginPage', () => {
     });
 
     test('shows error when server returns 500', async () => {
-        server.use(http.get('http://localhost:8080/users/login', () => new HttpResponse(null, { status: 500 })));
+        server.use(http.get('/users/login', () => new HttpResponse(null, { status: 500 })));
         const user = userEvent.setup();
         renderLogin();
 
@@ -76,7 +76,7 @@ describe('LoginPage', () => {
 
     test('button shows loading text while request is in flight', async () => {
         server.use(
-            http.get('http://localhost:8080/users/login', async () => {
+            http.get('/users/login', async () => {
                 await new Promise(r => setTimeout(r, 100));
                 return HttpResponse.json(ADMIN);
             })
@@ -93,7 +93,7 @@ describe('LoginPage', () => {
     test('trims and lowercases the email before sending', async () => {
         let sentEmail;
         server.use(
-            http.get('http://localhost:8080/users/login', ({ request }) => {
+            http.get('/users/login', ({ request }) => {
                 sentEmail = new URL(request.url).searchParams.get('email');
                 return HttpResponse.json(ADMIN);
             })
@@ -152,7 +152,7 @@ describe('RBAC — employee nav', () => {
         expect(screen.getByText('New Order Request')).toBeInTheDocument();
         expect(screen.getByText('My Orders')).toBeInTheDocument();
         expect(screen.getByText('Unclaimed Packages')).toBeInTheDocument();
-        expect(screen.getByText('Notifications')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
     });
 
     test('employee does not see admin-only nav items', () => {
@@ -173,7 +173,7 @@ describe('RBAC — admin nav', () => {
         expect(screen.getByText('Track Package')).toBeInTheDocument();
         expect(screen.getByText('Create Package')).toBeInTheDocument();
         expect(screen.getByText('Order Requests')).toBeInTheDocument();
-        expect(screen.getByText('Packages Dashboard')).toBeInTheDocument();
+        expect(screen.getByText('Dashboard')).toBeInTheDocument();
     });
 });
 

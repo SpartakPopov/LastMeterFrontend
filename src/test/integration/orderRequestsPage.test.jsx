@@ -33,6 +33,7 @@ const fakeOrders = [
 
 const server = setupServer(
     http.get('/order-requests', () => HttpResponse.json(fakeOrders)),
+    http.get('/order-groups', () => HttpResponse.json([])),
     http.patch('/order-requests/:id/approve', () => HttpResponse.json({ id: '1', status: 'APPROVED' })),
     http.patch('/order-requests/:id/reject', () => HttpResponse.json({ id: '1', status: 'REJECTED' })),
 );
@@ -63,7 +64,7 @@ describe('OrderRequestsPage', () => {
         );
         render(<OrderRequestsPage />);
 
-        await waitFor(() => expect(screen.getByText('No order requests yet.')).toBeInTheDocument());
+        await waitFor(() => expect(screen.getByText('No order requests found.')).toBeInTheDocument());
     });
 
     test('shows error if fetch fails', async () => {
@@ -101,7 +102,7 @@ describe('OrderRequestsPage', () => {
         render(<OrderRequestsPage />);
         await waitFor(() => screen.getByText('Need a new keyboard'));
 
-        await user.click(screen.getAllByRole('button', { name: /approve/i })[0]);
+        await user.click(screen.getByRole('button', { name: /^approve$/i }));
 
         expect(screen.getByText('Approve Request')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Add a note for the user…')).toBeInTheDocument();
@@ -112,7 +113,7 @@ describe('OrderRequestsPage', () => {
         render(<OrderRequestsPage />);
         await waitFor(() => screen.getByText('Need a new keyboard'));
 
-        await user.click(screen.getByRole('button', { name: /reject/i }));
+        await user.click(screen.getByRole('button', { name: /^reject$/i }));
 
         expect(screen.getByText('Reject Request')).toBeInTheDocument();
     });
@@ -122,7 +123,7 @@ describe('OrderRequestsPage', () => {
         render(<OrderRequestsPage />);
         await waitFor(() => screen.getByText('Need a new keyboard'));
 
-        await user.click(screen.getAllByRole('button', { name: /approve/i })[0]);
+        await user.click(screen.getByRole('button', { name: /^approve$/i }));
         await user.type(screen.getByPlaceholderText('Add a note for the user…'), 'Looks good');
 
         const modal = screen.getByText('Approve Request').closest('div');
@@ -137,7 +138,7 @@ describe('OrderRequestsPage', () => {
         render(<OrderRequestsPage />);
         await waitFor(() => screen.getByText('Need a new keyboard'));
 
-        await user.click(screen.getAllByRole('button', { name: /approve/i })[0]);
+        await user.click(screen.getByRole('button', { name: /^approve$/i }));
         expect(screen.getByText('Approve Request')).toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: /cancel/i }));

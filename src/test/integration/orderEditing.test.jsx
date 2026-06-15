@@ -28,15 +28,15 @@ const rejectedReq = {
 // ── server ─────────────────────────────────────────────────────────────────
 
 const server = setupServer(
-    http.get('http://localhost:8080/order-requests', () => HttpResponse.json([pendingReq, approvedReq, rejectedReq])),
-    http.get('http://localhost:8080/order-groups', () => HttpResponse.json([])),
-    http.patch('http://localhost:8080/order-requests/:id/approve', () =>
+    http.get('/order-requests', () => HttpResponse.json([pendingReq, approvedReq, rejectedReq])),
+    http.get('/order-groups', () => HttpResponse.json([])),
+    http.patch('/order-requests/:id/approve', () =>
         HttpResponse.json({ ...pendingReq, status: 'APPROVED', managerNotes: 'Looks good' })
     ),
-    http.patch('http://localhost:8080/order-requests/:id/reject', () =>
+    http.patch('/order-requests/:id/reject', () =>
         HttpResponse.json({ ...pendingReq, status: 'REJECTED', managerNotes: 'Over budget' })
     ),
-    http.patch('http://localhost:8080/order-requests/:id/fulfill', () =>
+    http.patch('/order-requests/:id/fulfill', () =>
         HttpResponse.json({ ...approvedReq, status: 'ORDERED' })
     ),
 );
@@ -152,7 +152,7 @@ describe('Approve flow', () => {
 
     test('Cancel closes the modal without calling the API', async () => {
         let apiCalled = false;
-        server.use(http.patch('http://localhost:8080/order-requests/:id/approve', () => { apiCalled = true; return HttpResponse.json({}); }));
+        server.use(http.patch('/order-requests/:id/approve', () => { apiCalled = true; return HttpResponse.json({}); }));
 
         const user = userEvent.setup();
         render(<OrderRequestsPage />);
@@ -168,7 +168,7 @@ describe('Approve flow', () => {
     test('submitting approve sends correct payload', async () => {
         let capturedBody;
         server.use(
-            http.patch('http://localhost:8080/order-requests/:id/approve', async ({ request }) => {
+            http.patch('/order-requests/:id/approve', async ({ request }) => {
                 capturedBody = await request.json();
                 return HttpResponse.json({ ...pendingReq, status: 'APPROVED' });
             })
@@ -202,7 +202,7 @@ describe('Approve flow', () => {
     });
 
     test('API error is shown inside the modal', async () => {
-        server.use(http.patch('http://localhost:8080/order-requests/:id/approve', () => new HttpResponse('Server error: 500', { status: 500 })));
+        server.use(http.patch('/order-requests/:id/approve', () => new HttpResponse('Server error: 500', { status: 500 })));
 
         const user = userEvent.setup();
         render(<OrderRequestsPage />);
@@ -233,7 +233,7 @@ describe('Reject flow', () => {
     test('submitting reject sends correct payload', async () => {
         let capturedBody;
         server.use(
-            http.patch('http://localhost:8080/order-requests/:id/reject', async ({ request }) => {
+            http.patch('/order-requests/:id/reject', async ({ request }) => {
                 capturedBody = await request.json();
                 return HttpResponse.json({ ...pendingReq, status: 'REJECTED' });
             })
@@ -270,7 +270,7 @@ describe('Fulfill / Place Order flow', () => {
 
     test('submitting with no tracking number keeps the modal open', async () => {
         let apiCalled = false;
-        server.use(http.patch('http://localhost:8080/order-requests/:id/fulfill', () => { apiCalled = true; return HttpResponse.json({}); }));
+        server.use(http.patch('/order-requests/:id/fulfill', () => { apiCalled = true; return HttpResponse.json({}); }));
 
         const user = userEvent.setup();
         render(<OrderRequestsPage />);
@@ -288,7 +288,7 @@ describe('Fulfill / Place Order flow', () => {
     test('submitting fulfill sends tracking numbers to the API', async () => {
         let capturedBody;
         server.use(
-            http.patch('http://localhost:8080/order-requests/:id/fulfill', async ({ request }) => {
+            http.patch('/order-requests/:id/fulfill', async ({ request }) => {
                 capturedBody = await request.json();
                 return HttpResponse.json({ ...approvedReq, status: 'ORDERED' });
             })
@@ -324,7 +324,7 @@ describe('Fulfill / Place Order flow', () => {
     });
 
     test('API error is shown inside the fulfill modal', async () => {
-        server.use(http.patch('http://localhost:8080/order-requests/:id/fulfill', () => new HttpResponse('Server error: 500', { status: 500 })));
+        server.use(http.patch('/order-requests/:id/fulfill', () => new HttpResponse('Server error: 500', { status: 500 })));
 
         const user = userEvent.setup();
         render(<OrderRequestsPage />);
